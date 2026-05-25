@@ -48,6 +48,7 @@ test('Total balance is equal to savings plus current account balance', async ({p
     const savingBalanace = moneyToNumber(SavingsBalanceCheck)
 
     await expect (checkingBalance + savingBalanace).toBe(totalBalance);
+// Claude 
 // const balances = page.getByTestId('account-balance');
 // const count = await balances.count();
 // for (let i = 0; i < count; i++) {
