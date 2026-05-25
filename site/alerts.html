@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alerts &amp; Dialogs - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-body">
+<script>if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';</script>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" data-testid="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">PW</div>
+      <div><div class="brand-name">PW Practice</div><div class="brand-sub">Automation Training</div></div>
+    </div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" data-testid="nav-dashboard"><span class="nav-dot"></span> Dashboard</a>
+    <a href="alerts.html" data-testid="nav-alerts" class="active"><span class="nav-dot"></span> Alerts &amp; Dialogs</a>
+    <a href="forms.html" data-testid="nav-forms"><span class="nav-dot"></span> Forms &amp; Inputs</a>
+    <a href="tables.html" data-testid="nav-tables"><span class="nav-dot"></span> Tables &amp; Data</a>
+    <a href="dynamic.html" data-testid="nav-dynamic"><span class="nav-dot"></span> Dynamic Content</a>
+    <a href="interactions.html" data-testid="nav-interactions"><span class="nav-dot"></span> Interactions</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="username-display">admin</div>
+        <div class="user-role">Tester</div>
+      </div>
+    </div>
+    <button class="btn btn-outline btn-full btn-sm" data-testid="logout-button" onclick="logout()">Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Alerts &amp; Dialogs</h1>
+      <p>Practice handling JS dialogs, custom modals, and toast notifications</p>
+    </div>
+    <span class="tag tag-red">page.on('dialog')</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ── SCENARIO 1: Simple Alert ── -->
+    <div class="card" data-testid="section-alert">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>1. JavaScript Alert</h3>
+          <p>Triggers <code class="code">window.alert()</code> — use <code class="code">page.on('dialog', d => d.accept())</code></p>
+        </div>
+        <span class="tag tag-red">alert</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          In Playwright: <code>page.on('dialog', dialog => dialog.accept())</code> then click the button.
+        </div>
+        <div class="flex gap-8 flex-wrap">
+          <button class="btn btn-danger" data-testid="trigger-alert-btn" onclick="triggerAlert()">
+            Trigger Alert
+          </button>
+          <button class="btn btn-warning" data-testid="trigger-alert-msg-btn" onclick="triggerAlertWithMsg()">
+            Alert with Custom Message
+          </button>
+        </div>
+        <div class="result-box hidden" data-testid="alert-result" id="alert-result">Waiting for interaction...</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 2: Confirm Dialog ── -->
+    <div class="card" data-testid="section-confirm">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>2. JavaScript Confirm Dialog</h3>
+          <p>Triggers <code class="code">window.confirm()</code> — can accept or dismiss</p>
+        </div>
+        <span class="tag tag-yellow">confirm</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Accept: <code>dialog.accept()</code> &nbsp;&nbsp;|&nbsp;&nbsp; Dismiss: <code>dialog.dismiss()</code>
+        </div>
+        <div class="flex gap-8 flex-wrap">
+          <button class="btn btn-primary" data-testid="trigger-confirm-btn" onclick="triggerConfirm()">
+            Trigger Confirm
+          </button>
+          <button class="btn btn-danger" data-testid="trigger-confirm-delete-btn" onclick="triggerConfirmDelete()">
+            Confirm Delete Action
+          </button>
+        </div>
+        <div class="result-box hidden" data-testid="confirm-result" id="confirm-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 3: Prompt Dialog ── -->
+    <div class="card" data-testid="section-prompt">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>3. JavaScript Prompt Dialog</h3>
+          <p>Triggers <code class="code">window.prompt()</code> — enter a value then accept</p>
+        </div>
+        <span class="tag tag-purple">prompt</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          In Playwright: <code>page.on('dialog', d => d.accept('your text'))</code>
+        </div>
+        <div class="flex gap-8 flex-wrap">
+          <button class="btn btn-primary" data-testid="trigger-prompt-btn" onclick="triggerPrompt()">
+            Trigger Prompt (Enter Name)
+          </button>
+          <button class="btn btn-info" data-testid="trigger-prompt-default-btn" onclick="triggerPromptDefault()">
+            Prompt with Default Value
+          </button>
+        </div>
+        <div class="result-box hidden" data-testid="prompt-result" id="prompt-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 4: Delayed Alert ── -->
+    <div class="card" data-testid="section-delayed-alert">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>4. Delayed Alert (after 3 seconds)</h3>
+          <p>Alert fires after a delay — tests that your dialog handler is set up before the alert appears</p>
+        </div>
+        <span class="tag tag-yellow">timing</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Register <code>page.on('dialog', ...)</code> BEFORE clicking — the handler persists for future dialogs.
+        </div>
+        <button class="btn btn-warning" data-testid="trigger-delayed-alert-btn" onclick="triggerDelayedAlert()">
+          Trigger Alert After 3 Seconds
+        </button>
+        <div class="result-box hidden" data-testid="delayed-alert-result" id="delayed-alert-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 5: Custom Modal ── -->
+    <div class="card" data-testid="section-modal">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>5. Custom CSS Modal Dialog</h3>
+          <p>Not a JS dialog — a CSS/HTML modal overlay. No <code class="code">page.on('dialog')</code> needed.</p>
+        </div>
+        <span class="tag tag-blue">modal</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Use locators to find modal content, click the close button or action buttons.
+        </div>
+        <div class="flex gap-8 flex-wrap">
+          <button class="btn btn-primary" data-testid="open-modal-btn" onclick="openModal('modal-basic')">
+            Open Basic Modal
+          </button>
+          <button class="btn btn-danger" data-testid="open-confirm-modal-btn" onclick="openModal('modal-confirm')">
+            Open Confirm Modal
+          </button>
+          <button class="btn btn-info" data-testid="open-form-modal-btn" onclick="openModal('modal-form')">
+            Open Form Modal
+          </button>
+        </div>
+        <div class="result-box hidden" data-testid="modal-result" id="modal-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 6: Toast Notifications ── -->
+    <div class="card" data-testid="section-toast">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>6. Toast Notifications</h3>
+          <p>Non-blocking notifications that appear and auto-dismiss. Test with <code class="code">waitForSelector</code>.</p>
+        </div>
+        <span class="tag tag-green">toast</span>
+      </div>
+      <div class="card-body">
+        <div class="flex gap-8 flex-wrap">
+          <button class="btn btn-success" data-testid="toast-success-btn" onclick="showToast('success', 'Operation completed successfully!')">
+            Success Toast
+          </button>
+          <button class="btn btn-danger" data-testid="toast-error-btn" onclick="showToast('danger', 'An error occurred. Please try again.')">
+            Error Toast
+          </button>
+          <button class="btn btn-warning" data-testid="toast-warning-btn" onclick="showToast('warning', 'Warning: This action cannot be undone.')">
+            Warning Toast
+          </button>
+          <button class="btn btn-info" data-testid="toast-info-btn" onclick="showToast('info', 'New update available. Click to refresh.')">
+            Info Toast
+          </button>
+          <button class="btn btn-secondary" data-testid="toast-stacked-btn" onclick="showStackedToasts()">
+            Show Multiple Toasts
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 7: Nested Modal ── -->
+    <div class="card" data-testid="section-nested-modal">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>7. Nested Modal (Modal inside Modal)</h3>
+          <p>Open a second modal from within the first. Tests modal stacking.</p>
+        </div>
+        <span class="tag tag-purple">advanced</span>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-primary" data-testid="open-nested-modal-btn" onclick="openModal('modal-nested-1')">
+          Open First Modal
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 8: Alert After Form Submit ── -->
+    <div class="card" data-testid="section-form-alert">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>8. Alert on Form Submission</h3>
+          <p>A form that triggers an alert when submitted. Common real-world pattern.</p>
+        </div>
+        <span class="tag tag-red">form + alert</span>
+      </div>
+      <div class="card-body">
+        <form data-testid="alert-form" id="alert-form" onsubmit="handleFormAlert(event)" novalidate>
+          <div class="form-group">
+            <label class="form-label required" for="alert-form-name">Your Name</label>
+            <input type="text" id="alert-form-name" data-testid="alert-form-name" class="form-control" placeholder="Enter your name" />
+          </div>
+          <button type="submit" class="btn btn-primary" data-testid="alert-form-submit">Submit &amp; Show Alert</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── MODALS ── -->
+
+<!-- Basic Modal -->
+<div class="modal-overlay" id="modal-basic" data-testid="modal-basic">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 data-testid="modal-title">Basic Modal</h3>
+      <button class="modal-close" data-testid="modal-close-btn" onclick="closeModal('modal-basic')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p data-testid="modal-content" style="font-size:14px;color:var(--text-muted);line-height:1.6;">
+        This is a custom modal dialog. It is NOT a JavaScript alert — it's a CSS overlay.<br><br>
+        In Playwright, interact with elements inside this modal using standard locators.
+        Use <code class="code">toBeVisible()</code> to assert the modal is open.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="modal-cancel-btn" onclick="closeModal('modal-basic')">Cancel</button>
+      <button class="btn btn-primary" data-testid="modal-ok-btn" onclick="modalAction('modal-basic', 'Clicked OK')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="modal-confirm" data-testid="modal-confirm">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Confirm Deletion</h3>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" style="margin-bottom:12px;">
+        This action is permanent and cannot be undone.
+      </div>
+      <p data-testid="confirm-modal-text" style="font-size:14px;">
+        Are you sure you want to delete the item <strong>"Test Record #42"</strong>?
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="confirm-modal-cancel" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn btn-danger" data-testid="confirm-modal-delete" onclick="modalAction('modal-confirm', 'Delete confirmed')">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Form Modal -->
+<div class="modal-overlay" id="modal-form" data-testid="modal-form">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add New Item</h3>
+      <button class="modal-close" onclick="closeModal('modal-form')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label required" for="modal-item-name">Item Name</label>
+        <input type="text" id="modal-item-name" data-testid="modal-item-name" class="form-control" placeholder="Enter item name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="modal-item-type">Category</label>
+        <select id="modal-item-type" data-testid="modal-item-type" class="form-control">
+          <option value="">-- Select category --</option>
+          <option value="test">Test</option>
+          <option value="bug">Bug</option>
+          <option value="feature">Feature</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="form-modal-cancel" onclick="closeModal('modal-form')">Cancel</button>
+      <button class="btn btn-primary" data-testid="form-modal-save" onclick="saveFormModal()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nested Modal 1 -->
+<div class="modal-overlay" id="modal-nested-1" data-testid="modal-nested-1">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>First Modal</h3>
+      <button class="modal-close" onclick="closeModal('modal-nested-1')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:14px;">
+        This is the first modal. Click the button below to open a second modal on top.
+      </p>
+      <button class="btn btn-primary" data-testid="open-nested-modal-2-btn" onclick="openModal('modal-nested-2')">
+        Open Second Modal
+      </button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="close-nested-modal-1" onclick="closeModal('modal-nested-1')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nested Modal 2 -->
+<div class="modal-overlay" id="modal-nested-2" data-testid="modal-nested-2" style="z-index:9100;">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Second (Nested) Modal</h3>
+      <button class="modal-close" onclick="closeModal('modal-nested-2')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p data-testid="nested-modal-text" style="font-size:14px;color:var(--text-muted);">
+        You are now inside a nested modal! This is the second modal stacked on top of the first.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="close-nested-modal-2" onclick="closeModal('modal-nested-2')">Close This</button>
+      <button class="btn btn-danger" data-testid="close-all-modals-btn" onclick="closeAllModals()">Close All</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container" data-testid="toast-container"></div>
+
+<script>
+  const username = sessionStorage.getItem('username') || 'admin';
+  document.getElementById('username-display').textContent = username;
+  document.getElementById('user-avatar').textContent = username[0].toUpperCase();
+  function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+  // ── Alerts ──
+  function triggerAlert() {
+    window.alert('Hello from Playwright Practice!\nThis is a simple JavaScript alert.');
+    showResult('alert-result', 'Alert was accepted.');
+  }
+
+  function triggerAlertWithMsg() {
+    window.alert('Custom alert message: The operation completed at ' + new Date().toLocaleTimeString());
+    showResult('alert-result', 'Custom alert was accepted.');
+  }
+
+  function triggerConfirm() {
+    const result = window.confirm('Do you want to proceed with this action?');
+    showResult('confirm-result', result ? 'Confirm: User clicked OK (accepted)' : 'Confirm: User clicked Cancel (dismissed)');
+  }
+
+  function triggerConfirmDelete() {
+    const result = window.confirm('Are you sure you want to permanently delete this record?');
+    showResult('confirm-result', result ? 'Delete confirmed by user.' : 'Delete cancelled by user.');
+  }
+
+  function triggerPrompt() {
+    const name = window.prompt('What is your name?');
+    if (name !== null) {
+      showResult('prompt-result', `Prompt accepted. Value entered: "${name}"`);
+    } else {
+      showResult('prompt-result', 'Prompt was dismissed (cancelled).');
+    }
+  }
+
+  function triggerPromptDefault() {
+    const value = window.prompt('Enter a test value:', 'default_value_here');
+    if (value !== null) {
+      showResult('prompt-result', `Prompt accepted. Value: "${value}"`);
+    } else {
+      showResult('prompt-result', 'Prompt was dismissed.');
+    }
+  }
+
+  function triggerDelayedAlert() {
+    showResult('delayed-alert-result', 'Alert will fire in 3 seconds...');
+    setTimeout(() => {
+      window.alert('Delayed alert! This fired 3 seconds after the button was clicked.');
+      showResult('delayed-alert-result', 'Delayed alert was accepted after 3s.');
+    }, 3000);
+  }
+
+  function handleFormAlert(e) {
+    e.preventDefault();
+    const name = document.getElementById('alert-form-name').value.trim();
+    if (!name) { window.alert('Please enter your name!'); return; }
+    window.alert(`Form submitted successfully!\nHello, ${name}!`);
+  }
+
+  // ── Modals ──
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  }
+  function modalAction(id, msg) {
+    closeModal(id);
+    showResult('modal-result', msg + ' at ' + new Date().toLocaleTimeString());
+  }
+  function saveFormModal() {
+    const name = document.getElementById('modal-item-name').value;
+    const type = document.getElementById('modal-item-type').value;
+    closeModal('modal-form');
+    showResult('modal-result', `Saved: name="${name || '(empty)'}", category="${type || 'none'}"`);
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+
+  // ── Toasts ──
+  let toastCount = 0;
+  function showToast(type, message) {
+    toastCount++;
+    const id = 'toast-' + toastCount;
+    const icons = { success: '&#10003;', danger: '&#10007;', warning: '&#9888;', info: 'ℹ' };
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute('data-testid', `toast-${type}`);
+    toast.setAttribute('id', id);
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type] || 'i'}</span>
+      <span class="toast-msg" data-testid="toast-message">${message}</span>
+      <button class="toast-close" onclick="removeToast('${id}')">&times;</button>
+    `;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => removeToast(id), 4000);
+  }
+
+  function removeToast(id) {
+    const t = document.getElementById(id);
+    if (t) {
+      t.style.animation = 'toastOut 0.3s ease forwards';
+      setTimeout(() => t.remove(), 300);
+    }
+  }
+
+  function showStackedToasts() {
+    showToast('success', 'Task 1 completed!');
+    setTimeout(() => showToast('info', 'Task 2 is processing...'), 300);
+    setTimeout(() => showToast('warning', 'Task 3 needs attention.'), 600);
+    setTimeout(() => showToast('danger', 'Task 4 failed.'), 900);
+  }
+
+  // ── Helpers ──
+  function showResult(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactions - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .drag-zone { min-height: 60px; border: 2px dashed var(--border); border-radius: 8px; padding: 10px; margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .drag-zone.drag-active { border-color: var(--primary); background: rgba(67,97,238,0.04); }
+    .sortable-placeholder { height: 50px; border: 2px dashed var(--primary); border-radius: 8px; background: rgba(67,97,238,0.05); }
+    .kbd-output { font-family: monospace; background: #1e1e2e; color: #a8e6cf; padding: 10px 14px; border-radius: 8px; font-size: 13px; min-height: 36px; }
+    .dblclick-box { padding: 20px; border: 2px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; user-select: none; transition: all 0.15s; }
+    .dblclick-box:hover { border-color: var(--primary); }
+    .context-target { padding: 20px; border: 2px dashed var(--border); border-radius: 8px; text-align: center; color: var(--text-muted); font-size: 14px; user-select: none; }
+  </style>
+</head>
+<body class="app-body">
+<script>if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';</script>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" data-testid="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">PW</div>
+      <div><div class="brand-name">PW Practice</div><div class="brand-sub">Automation Training</div></div>
+    </div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" data-testid="nav-dashboard"><span class="nav-dot"></span> Dashboard</a>
+    <a href="alerts.html" data-testid="nav-alerts"><span class="nav-dot"></span> Alerts &amp; Dialogs</a>
+    <a href="forms.html" data-testid="nav-forms"><span class="nav-dot"></span> Forms &amp; Inputs</a>
+    <a href="tables.html" data-testid="nav-tables"><span class="nav-dot"></span> Tables &amp; Data</a>
+    <a href="dynamic.html" data-testid="nav-dynamic"><span class="nav-dot"></span> Dynamic Content</a>
+    <a href="interactions.html" data-testid="nav-interactions" class="active"><span class="nav-dot"></span> Interactions</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div class="user-info"><div class="user-name" id="username-display">admin</div><div class="user-role">Tester</div></div>
+    </div>
+    <button class="btn btn-outline btn-full btn-sm" data-testid="logout-button" onclick="logout()">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Interactions</h1>
+      <p>Practice drag &amp; drop, hover, iframes, new tabs, keyboard, right-click, and more</p>
+    </div>
+    <span class="tag tag-purple">advanced scenarios</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ── SCENARIO 1: Drag and Drop (Sortable List) ── -->
+    <div class="card" data-testid="section-drag-drop">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>1. Drag and Drop — Sortable List</h3>
+          <p>Reorder items by dragging — use <code class="code">page.dragAndDrop(source, target)</code></p>
+        </div>
+        <span class="tag tag-purple">dragAndDrop()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.dragAndDrop('[data-testid="drag-item-1"]', '[data-testid="drag-item-3"]')</code>
+        </div>
+        <div class="drag-list" id="sortable-list" data-testid="sortable-list">
+          <div class="drag-item" draggable="true" data-testid="drag-item-1" data-order="1">
+            <span class="drag-handle">&#9776;</span>
+            <span style="flex:1;">Item 1 — JavaScript Fundamentals</span>
+            <span class="badge badge-primary">1</span>
+          </div>
+          <div class="drag-item" draggable="true" data-testid="drag-item-2" data-order="2">
+            <span class="drag-handle">&#9776;</span>
+            <span style="flex:1;">Item 2 — Playwright Setup &amp; Config</span>
+            <span class="badge badge-primary">2</span>
+          </div>
+          <div class="drag-item" draggable="true" data-testid="drag-item-3" data-order="3">
+            <span class="drag-handle">&#9776;</span>
+            <span style="flex:1;">Item 3 — Writing Your First Test</span>
+            <span class="badge badge-primary">3</span>
+          </div>
+          <div class="drag-item" draggable="true" data-testid="drag-item-4" data-order="4">
+            <span class="drag-handle">&#9776;</span>
+            <span style="flex:1;">Item 4 — Locators &amp; Selectors</span>
+            <span class="badge badge-primary">4</span>
+          </div>
+          <div class="drag-item" draggable="true" data-testid="drag-item-5" data-order="5">
+            <span class="drag-handle">&#9776;</span>
+            <span style="flex:1;">Item 5 — Assertions &amp; Matchers</span>
+            <span class="badge badge-primary">5</span>
+          </div>
+        </div>
+        <div class="result-box mt-12" data-testid="drag-order-result" id="drag-order-result">Order: 1, 2, 3, 4, 5</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 2: Hover Tooltip ── -->
+    <div class="card" data-testid="section-hover-tooltip">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>2. Hover Tooltips</h3>
+          <p>Hover over an element to reveal tooltip — use <code class="code">hover()</code></p>
+        </div>
+        <span class="tag tag-blue">hover()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="hover-btn-1"]').hover()</code>
+          then <code>await expect(page.locator('[data-testid="tooltip-1"]')).toBeVisible()</code>
+        </div>
+        <div class="flex gap-16 flex-wrap">
+          <div class="tip" data-testid="hover-target-1">
+            <button class="btn btn-primary" data-testid="hover-btn-1">Hover Me</button>
+            <span class="tip-text" data-testid="tooltip-1">This is a tooltip! Playwright used hover().</span>
+          </div>
+          <div class="tip" data-testid="hover-target-2">
+            <button class="btn btn-success" data-testid="hover-btn-2">Hover for Info</button>
+            <span class="tip-text" data-testid="tooltip-2">Success: All systems operational</span>
+          </div>
+          <div class="tip" data-testid="hover-target-3">
+            <button class="btn btn-warning" data-testid="hover-btn-3">Hover Warning</button>
+            <span class="tip-text" data-testid="tooltip-3">Warning: This action requires confirmation</span>
+          </div>
+          <div class="tip" data-testid="hover-target-4">
+            <span style="cursor:help;text-decoration:underline dotted;font-size:14px;" data-testid="hover-text-4">
+              What is Playwright?
+              <span class="tip-text" data-testid="tooltip-4" style="white-space:normal;width:200px;text-align:left;">Playwright is an open-source testing framework by Microsoft for web automation.</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 3: Hover Dropdown Menu ── -->
+    <div class="card" data-testid="section-hover-dropdown">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>3. Hover Dropdown Menu</h3>
+          <p>Hover to reveal menu, then click an item — tests compound hover + click</p>
+        </div>
+        <span class="tag tag-blue">hover() + click()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="hover-menu-trigger"]').hover()</code>
+          then <code>await page.locator('[data-testid="hover-menu-item-1"]').click()</code>
+        </div>
+        <div class="flex gap-16">
+          <div class="dropdown" data-testid="hover-dropdown-1">
+            <button class="btn btn-primary" data-testid="hover-menu-trigger">
+              Account Menu &#9660;
+            </button>
+            <div class="dropdown-menu" data-testid="hover-dropdown-menu">
+              <a class="dropdown-item" data-testid="hover-menu-item-1" href="#" onclick="menuItemClicked('Profile',event)">My Profile</a>
+              <a class="dropdown-item" data-testid="hover-menu-item-2" href="#" onclick="menuItemClicked('Settings',event)">Settings</a>
+              <a class="dropdown-item" data-testid="hover-menu-item-3" href="#" onclick="menuItemClicked('Help',event)">Help Center</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" data-testid="hover-menu-item-logout" href="#" onclick="menuItemClicked('Logout',event)" style="color:var(--danger);">Sign Out</a>
+            </div>
+          </div>
+
+          <div class="dropdown" data-testid="hover-dropdown-2">
+            <button class="btn btn-outline" data-testid="hover-menu-trigger-2">
+              Navigation &#9660;
+            </button>
+            <div class="dropdown-menu" data-testid="hover-dropdown-menu-2">
+              <a class="dropdown-item" data-testid="hover-menu-2-item-1" href="#" onclick="menuItemClicked('Dashboard',event)">Dashboard</a>
+              <a class="dropdown-item" data-testid="hover-menu-2-item-2" href="#" onclick="menuItemClicked('Reports',event)">Reports</a>
+              <a class="dropdown-item" data-testid="hover-menu-2-item-3" href="#" onclick="menuItemClicked('Analytics',event)">Analytics</a>
+            </div>
+          </div>
+        </div>
+        <div class="result-box mt-12 hidden" data-testid="hover-menu-result" id="hover-menu-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 4: iFrame ── -->
+    <div class="card" data-testid="section-iframe">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>4. iFrame Content</h3>
+          <p>Elements inside an iframe — use <code class="code">page.frameLocator('iframe')</code></p>
+        </div>
+        <span class="tag tag-red">frameLocator()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>const frame = page.frameLocator('[data-testid="practice-iframe"]')</code><br>
+          <code>await frame.locator('[data-testid="frame-input"]').fill('hello')</code>
+        </div>
+        <div class="iframe-wrapper" data-testid="iframe-wrapper">
+          <iframe
+            src="frame-content.html"
+            data-testid="practice-iframe"
+            id="practice-iframe"
+            title="Practice iFrame"
+            height="300"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 5: New Tab / Window ── -->
+    <div class="card" data-testid="section-new-tab">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>5. Open New Tab / Window</h3>
+          <p>Click to open a new browser tab — use <code class="code">context.waitForEvent('page')</code></p>
+        </div>
+        <span class="tag tag-green">waitForEvent('page')</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>const [newPage] = await Promise.all([context.waitForEvent('page'), page.locator('[data-testid="open-new-tab-btn"]').click()])</code><br>
+          <code>await newPage.waitForLoadState()</code>
+        </div>
+        <div class="flex gap-8 flex-wrap">
+          <button class="btn btn-primary" data-testid="open-new-tab-btn" onclick="openNewTab()">
+            Open New Tab
+          </button>
+          <button class="btn btn-outline" data-testid="open-named-window-btn" onclick="openNamedWindow()">
+            Open Named Window
+          </button>
+          <a class="btn btn-info" data-testid="open-tab-via-link" href="popup.html" target="_blank" rel="noopener">
+            Link Target=_blank
+          </a>
+        </div>
+        <div class="result-box mt-12" data-testid="new-tab-result" id="new-tab-result">Click a button above to open a new tab/window</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 6: Keyboard Interactions ── -->
+    <div class="card" data-testid="section-keyboard">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>6. Keyboard Interactions</h3>
+          <p>Type, press Enter, use keyboard shortcuts — <code class="code">keyboard.press()</code></p>
+        </div>
+        <span class="tag tag-purple">keyboard.press()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.keyboard.press('Enter')</code>
+          &nbsp; <code>await page.keyboard.press('Control+a')</code>
+          &nbsp; <code>await page.keyboard.press('Tab')</code>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="keyboard-input">Press keys while focused here</label>
+          <input
+            type="text"
+            id="keyboard-input"
+            data-testid="keyboard-input"
+            class="form-control"
+            placeholder="Click here and press any key..."
+          />
+        </div>
+        <div class="kbd-output" data-testid="key-output" id="key-output">Key log will appear here...</div>
+
+        <hr class="section-divider">
+
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Keyboard Shortcuts</div>
+        <div class="info-panel">
+          Focus the page and press <kbd class="kbd">Ctrl+K</kbd> to open search, <kbd class="kbd">Escape</kbd> to close.
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="padding:10px 14px;background:var(--light);border-radius:6px;font-size:13px;">
+            <kbd class="kbd">Ctrl+K</kbd> Open search
+          </div>
+          <div style="padding:10px 14px;background:var(--light);border-radius:6px;font-size:13px;">
+            <kbd class="kbd">Ctrl+S</kbd> Save (simulated)
+          </div>
+          <div style="padding:10px 14px;background:var(--light);border-radius:6px;font-size:13px;">
+            <kbd class="kbd">Escape</kbd> Close dialog
+          </div>
+          <div style="padding:10px 14px;background:var(--light);border-radius:6px;font-size:13px;">
+            <kbd class="kbd">Tab</kbd> Next field
+          </div>
+        </div>
+        <div class="result-box mt-12" data-testid="shortcut-result" id="shortcut-result">No shortcut activated yet</div>
+
+        <!-- Search overlay (opened by Ctrl+K) -->
+        <div id="search-overlay" data-testid="search-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:8000;display:none;align-items:flex-start;justify-content:center;padding-top:80px;">
+          <div style="background:white;border-radius:12px;width:500px;max-width:90vw;box-shadow:var(--shadow-lg);overflow:hidden;">
+            <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--text-muted);">&#128269;</span>
+              <input type="text" data-testid="search-overlay-input" placeholder="Search pages and scenarios..." style="flex:1;border:none;outline:none;font-size:15px;font-family:inherit;" />
+              <kbd class="kbd" style="cursor:pointer;" onclick="closeSearch()">Esc</kbd>
+            </div>
+            <div style="padding:12px;font-size:13px;color:var(--text-muted);">
+              <div data-testid="search-overlay-hint">Type to search... (Escape or click outside to close)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 7: Right-Click Context Menu ── -->
+    <div class="card" data-testid="section-right-click">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>7. Right-Click Context Menu</h3>
+          <p>Custom context menu on right-click — use <code class="code">click({ button: 'right' })</code></p>
+        </div>
+        <span class="tag tag-yellow">right-click</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="right-click-target"]').click({ button: 'right' })</code>
+          then <code>await page.locator('[data-testid="ctx-copy"]').click()</code>
+        </div>
+        <div
+          class="context-target"
+          data-testid="right-click-target"
+          id="right-click-target"
+          oncontextmenu="showContextMenu(event)"
+        >
+          Right-click anywhere in this area to open the context menu
+        </div>
+        <div class="result-box mt-12 hidden" data-testid="context-menu-result" id="context-menu-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 8: Double Click ── -->
+    <div class="card" data-testid="section-double-click">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>8. Double Click</h3>
+          <p>Double-click to trigger action — use <code class="code">dblclick()</code></p>
+        </div>
+        <span class="tag tag-yellow">dblclick()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="dblclick-box"]').dblclick()</code>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div
+              class="dblclick-box"
+              data-testid="dblclick-box"
+              id="dblclick-box"
+              ondblclick="handleDblClick()"
+              onclick="handleSingleClick()"
+            >
+              <div style="font-size:24px;margin-bottom:8px;">&#128433;</div>
+              <div style="font-weight:600;font-size:14px;">Double-click me!</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Single click = nothing. Double click = action.</div>
+            </div>
+          </div>
+          <div>
+            <div
+              class="dblclick-box"
+              data-testid="dblclick-edit-box"
+              id="dblclick-edit-text"
+              ondblclick="makeEditable(this)"
+            >
+              <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Double-click to Edit</div>
+              <div style="font-size:13px;color:var(--text-muted);" data-testid="editable-text" id="editable-text">
+                This text can be edited. Double-click to activate editing mode.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="result-box mt-12" data-testid="dblclick-result" id="dblclick-result">Waiting for double click...</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 9: Accordion ── -->
+    <div class="card" data-testid="section-accordion">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>9. Accordion Component</h3>
+          <p>Click to expand/collapse sections — assert content visibility</p>
+        </div>
+        <span class="tag tag-blue">click + visible</span>
+      </div>
+      <div class="card-body">
+        <div data-testid="accordion">
+          <div class="accordion-item" data-testid="accordion-item-1" id="accordion-item-1">
+            <div class="accordion-header" data-testid="accordion-header-1" onclick="toggleAccordion('accordion-item-1')">
+              <span>What is Playwright?</span>
+              <span class="accordion-arrow">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content" data-testid="accordion-content-1">
+                Playwright is an open-source automation framework developed by Microsoft. It supports Chromium, Firefox, and WebKit browsers, and allows you to write reliable end-to-end tests.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" data-testid="accordion-item-2" id="accordion-item-2">
+            <div class="accordion-header" data-testid="accordion-header-2" onclick="toggleAccordion('accordion-item-2')">
+              <span>How do locators work in Playwright?</span>
+              <span class="accordion-arrow">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content" data-testid="accordion-content-2">
+                Playwright locators are lazy — they don't execute immediately. They represent a way to find elements on the page. Common methods: getByRole(), getByText(), getByLabel(), getByTestId(), locator('css').
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" data-testid="accordion-item-3" id="accordion-item-3">
+            <div class="accordion-header" data-testid="accordion-header-3" onclick="toggleAccordion('accordion-item-3')">
+              <span>What is the difference between page.click() and locator.click()?</span>
+              <span class="accordion-arrow">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content" data-testid="accordion-content-3">
+                page.click(selector) is the legacy approach. locator.click() is the modern approach and is more reliable. Locators auto-wait and auto-retry, making tests more stable.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" data-testid="accordion-item-4" id="accordion-item-4">
+            <div class="accordion-header" data-testid="accordion-header-4" onclick="toggleAccordion('accordion-item-4')">
+              <span>How do you handle authentication in Playwright tests?</span>
+              <span class="accordion-arrow">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content" data-testid="accordion-content-4">
+                Use storageState to save session after login, then reuse it across tests. Or use a beforeEach hook to log in before each test. For API-based auth, use request.post() to get a token.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 10: Tabs Component ── -->
+    <div class="card" data-testid="section-tabs">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>10. Tabs Component</h3>
+          <p>Switch between tabs — click tab button, assert panel content is visible</p>
+        </div>
+        <span class="tag tag-blue">tab navigation</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="tab-btn-2"]').click()</code>
+          then <code>await expect(page.locator('[data-testid="tab-panel-2"]')).toBeVisible()</code>
+        </div>
+        <div class="tabs-nav" data-testid="tabs-nav">
+          <button class="tab-btn active" data-testid="tab-btn-1" onclick="switchTab(1)">Overview</button>
+          <button class="tab-btn" data-testid="tab-btn-2" onclick="switchTab(2)">Locators</button>
+          <button class="tab-btn" data-testid="tab-btn-3" onclick="switchTab(3)">Assertions</button>
+          <button class="tab-btn" data-testid="tab-btn-4" onclick="switchTab(4)">Best Practices</button>
+        </div>
+        <div class="tab-panel active" data-testid="tab-panel-1" id="tab-panel-1">
+          <h4 style="margin-bottom:8px;font-size:14px;">Playwright Overview</h4>
+          <p style="font-size:13px;color:var(--text-muted);line-height:1.6;">
+            Playwright enables reliable end-to-end testing for modern web apps. Features include: auto-waits, multiple browser support, network interception, trace viewer, and parallel test execution.
+          </p>
+        </div>
+        <div class="tab-panel" data-testid="tab-panel-2" id="tab-panel-2">
+          <h4 style="margin-bottom:8px;font-size:14px;">Locator Types</h4>
+          <div style="font-size:13px;line-height:1.8;">
+            <div><code class="code">getByRole('button', { name: 'Submit' })</code> — by ARIA role</div>
+            <div><code class="code">getByText('Hello World')</code> — by text content</div>
+            <div><code class="code">getByLabel('Username')</code> — by label</div>
+            <div><code class="code">getByPlaceholder('Enter name')</code> — by placeholder</div>
+            <div><code class="code">getByTestId('login-btn')</code> — by data-testid</div>
+            <div><code class="code">locator('css-selector')</code> — by CSS</div>
+          </div>
+        </div>
+        <div class="tab-panel" data-testid="tab-panel-3" id="tab-panel-3">
+          <h4 style="margin-bottom:8px;font-size:14px;">Common Assertions</h4>
+          <div style="font-size:13px;line-height:1.8;">
+            <div><code class="code">toBeVisible()</code> — element is visible</div>
+            <div><code class="code">toBeHidden()</code> — element is hidden</div>
+            <div><code class="code">toHaveText('...')</code> — text matches</div>
+            <div><code class="code">toHaveValue('...')</code> — input value matches</div>
+            <div><code class="code">toBeChecked()</code> — checkbox is checked</div>
+            <div><code class="code">toHaveURL('...')</code> — URL matches</div>
+            <div><code class="code">toHaveCount(n)</code> — n matching elements</div>
+          </div>
+        </div>
+        <div class="tab-panel" data-testid="tab-panel-4" id="tab-panel-4">
+          <h4 style="margin-bottom:8px;font-size:14px;">Best Practices</h4>
+          <div style="font-size:13px;line-height:1.8;">
+            <div>&#10003; Use <code class="code">data-testid</code> attributes for stable selectors</div>
+            <div>&#10003; Prefer <code class="code">getByRole</code> for accessibility-first testing</div>
+            <div>&#10003; Never use hard-coded <code class="code">sleep()</code> — use auto-waits</div>
+            <div>&#10003; Use <code class="code">page.route()</code> to mock network requests</div>
+            <div>&#10003; Use <code class="code">storageState</code> to avoid login in every test</div>
+            <div>&#10003; Run tests in parallel with multiple workers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 11: Scroll ── -->
+    <div class="card" data-testid="section-scroll">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>11. Scroll to Element</h3>
+          <p>Scroll to bring an element into view — use <code class="code">scrollIntoViewIfNeeded()</code></p>
+        </div>
+        <span class="tag tag-cyan">scroll</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="scroll-target"]').scrollIntoViewIfNeeded()</code>
+        </div>
+        <button class="btn btn-primary" data-testid="scroll-to-target-btn" onclick="document.getElementById('scroll-target').scrollIntoView({behavior:'smooth'})">
+          Scroll to Target Element
+        </button>
+        <div style="height:120px;overflow:hidden;margin-top:12px;border:1px solid var(--border);border-radius:8px;position:relative;">
+          <div style="height:300px;padding:14px;overflow-y:auto;" id="scroll-container" data-testid="scroll-container">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:80px;">Scroll down inside this box...</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:80px;">Keep scrolling...</div>
+            <div
+              id="scroll-target"
+              data-testid="scroll-target"
+              style="padding:14px;background:rgba(67,97,238,0.1);border:2px solid var(--primary);border-radius:8px;text-align:center;"
+            >
+              <strong>Target Element!</strong> You scrolled to me!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 12: Clipboard ── -->
+    <div class="card" data-testid="section-clipboard">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>12. Copy to Clipboard</h3>
+          <p>Copy text and verify — use <code class="code">evaluate()</code> to read clipboard</p>
+        </div>
+        <span class="tag tag-green">evaluate()</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.locator('[data-testid="copy-btn"]').click()</code><br>
+          <code>const text = await page.evaluate(() => navigator.clipboard.readText())</code>
+        </div>
+        <div class="flex gap-8 flex-wrap items-center">
+          <input
+            type="text"
+            id="copy-input"
+            data-testid="copy-input"
+            class="form-control"
+            value="Hello from Playwright Practice!"
+            style="max-width:320px;"
+          />
+          <button class="btn btn-primary" data-testid="copy-btn" onclick="copyToClipboard()">Copy</button>
+          <button class="btn btn-outline" data-testid="paste-btn" onclick="pasteFromClipboard()">Paste Here</button>
+        </div>
+        <div class="result-box mt-12" data-testid="clipboard-result" id="clipboard-result">Clipboard result will appear here</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Context Menu -->
+<div class="ctx-menu" id="ctx-menu" data-testid="context-menu">
+  <div class="ctx-item" data-testid="ctx-copy" onclick="ctxAction('Copy')">&#128203; Copy</div>
+  <div class="ctx-item" data-testid="ctx-paste" onclick="ctxAction('Paste')">&#128196; Paste</div>
+  <div class="ctx-item" data-testid="ctx-inspect" onclick="ctxAction('Inspect')">&#128269; Inspect</div>
+  <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+  <div class="ctx-item danger" data-testid="ctx-delete" onclick="ctxAction('Delete')">&#128465; Delete</div>
+</div>
+
+<script>
+  const username = sessionStorage.getItem('username') || 'admin';
+  document.getElementById('username-display').textContent = username;
+  document.getElementById('user-avatar').textContent = username[0].toUpperCase();
+  function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+  // ── Drag and Drop ──
+  let draggedItem = null;
+  document.querySelectorAll('#sortable-list .drag-item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      draggedItem = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('drag-over'));
+      draggedItem = null;
+      updateDragOrder();
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (draggedItem && draggedItem !== item) item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if (draggedItem && draggedItem !== item) {
+        const list = document.getElementById('sortable-list');
+        const items = [...list.children];
+        const fromIdx = items.indexOf(draggedItem);
+        const toIdx = items.indexOf(item);
+        if (fromIdx < toIdx) list.insertBefore(draggedItem, item.nextSibling);
+        else list.insertBefore(draggedItem, item);
+      }
+    });
+  });
+
+  function updateDragOrder() {
+    const order = [...document.querySelectorAll('#sortable-list .drag-item')].map(i => i.getAttribute('data-order')).join(', ');
+    document.getElementById('drag-order-result').textContent = `Current order: ${order}`;
+  }
+
+  // ── Hover menu ──
+  function menuItemClicked(name, e) {
+    e.preventDefault();
+    const result = document.getElementById('hover-menu-result');
+    result.textContent = `Clicked menu item: "${name}" at ${new Date().toLocaleTimeString()}`;
+    result.classList.remove('hidden');
+  }
+
+  // ── New Tab/Window ──
+  function openNewTab() {
+    const newTab = window.open('popup.html', '_blank');
+    document.getElementById('new-tab-result').textContent = newTab ? 'New tab opened! (popup.html)' : 'Popup blocked. Allow popups in browser settings.';
+  }
+  function openNamedWindow() {
+    const newWin = window.open('popup.html', 'PracticeWindow', 'width=700,height=500,scrollbars=yes');
+    document.getElementById('new-tab-result').textContent = newWin ? 'Named window opened! (PracticeWindow)' : 'Window blocked.';
+  }
+
+  // ── Keyboard ──
+  const keyLog = [];
+  document.getElementById('keyboard-input').addEventListener('keydown', e => {
+    const parts = [];
+    if (e.ctrlKey) parts.push('Ctrl');
+    if (e.altKey) parts.push('Alt');
+    if (e.shiftKey) parts.push('Shift');
+    if (e.metaKey) parts.push('Meta');
+    if (!['Control','Alt','Shift','Meta'].includes(e.key)) parts.push(e.key === ' ' ? 'Space' : e.key);
+    const combo = parts.join('+');
+    keyLog.unshift(`Key pressed: ${combo}`);
+    if (keyLog.length > 5) keyLog.pop();
+    document.getElementById('key-output').textContent = keyLog.join('\n');
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('search-overlay').style.display = 'flex';
+      document.getElementById('shortcut-result').textContent = 'Ctrl+K: Search panel opened!';
+      document.querySelector('[data-testid="search-overlay-input"]').focus();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      document.getElementById('shortcut-result').textContent = `Ctrl+S: Save triggered at ${new Date().toLocaleTimeString()}`;
+    }
+    if (e.key === 'Escape') {
+      closeSearch();
+      document.getElementById('shortcut-result').textContent = 'Escape pressed — search closed';
+    }
+  });
+
+  function closeSearch() {
+    document.getElementById('search-overlay').style.display = 'none';
+  }
+
+  document.getElementById('search-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('search-overlay')) closeSearch();
+  });
+
+  // ── Right-click context menu ──
+  function showContextMenu(e) {
+    e.preventDefault();
+    const menu = document.getElementById('ctx-menu');
+    menu.style.left = e.clientX + 'px';
+    menu.style.top = e.clientY + 'px';
+    menu.classList.add('open');
+  }
+
+  function ctxAction(action) {
+    document.getElementById('ctx-menu').classList.remove('open');
+    const result = document.getElementById('context-menu-result');
+    result.textContent = `Context menu action: "${action}" at ${new Date().toLocaleTimeString()}`;
+    result.classList.remove('hidden');
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#ctx-menu')) {
+      document.getElementById('ctx-menu').classList.remove('open');
+    }
+  });
+
+  // ── Double-click ──
+  let dblclickCount = 0;
+  function handleDblClick() {
+    dblclickCount++;
+    document.getElementById('dblclick-result').textContent = `Double-clicked! Count: ${dblclickCount} | Time: ${new Date().toLocaleTimeString()}`;
+    document.getElementById('dblclick-box').style.borderColor = 'var(--success)';
+    setTimeout(() => document.getElementById('dblclick-box').style.borderColor = '', 500);
+  }
+  function handleSingleClick() { /* intentionally empty — only double click triggers action */ }
+
+  function makeEditable(el) {
+    const text = el.querySelector('[data-testid="editable-text"]');
+    if (text.contentEditable === 'true') return;
+    text.contentEditable = 'true';
+    text.style.outline = '2px solid var(--primary)';
+    text.style.borderRadius = '4px';
+    text.focus();
+    document.getElementById('dblclick-result').textContent = 'Editing mode activated! Click outside to save.';
+    text.addEventListener('blur', () => {
+      text.contentEditable = 'false';
+      text.style.outline = '';
+      document.getElementById('dblclick-result').textContent = `Text saved: "${text.textContent}"`;
+    }, { once: true });
+  }
+
+  // ── Accordion ──
+  function toggleAccordion(id) {
+    const item = document.getElementById(id);
+    const header = item.querySelector('.accordion-header');
+    const body = item.querySelector('.accordion-body');
+    const wasOpen = item.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.accordion-item').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('.accordion-header').classList.remove('open');
+    });
+    // Open clicked if was closed
+    if (!wasOpen) {
+      item.classList.add('open');
+      header.classList.add('open');
+    }
+  }
+
+  // ── Tabs ──
+  function switchTab(n) {
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i+1 === n));
+    document.querySelectorAll('.tab-panel').forEach((panel, i) => panel.classList.toggle('active', i+1 === n));
+  }
+
+  // ── Clipboard ──
+  function copyToClipboard() {
+    const val = document.getElementById('copy-input').value;
+    navigator.clipboard.writeText(val).then(() => {
+      document.getElementById('clipboard-result').textContent = `Copied to clipboard: "${val}"`;
+    }).catch(() => {
+      // Fallback
+      document.getElementById('clipboard-result').textContent = `Value to copy: "${val}" (clipboard API not available in this context)`;
+    });
+  }
+
+  function pasteFromClipboard() {
+    navigator.clipboard.readText().then(text => {
+      document.getElementById('clipboard-result').textContent = `Pasted from clipboard: "${text}"`;
+    }).catch(() => {
+      document.getElementById('clipboard-result').textContent = 'Paste: clipboard read permission needed. In Playwright use page.evaluate(() => navigator.clipboard.readText())';
+    });
+  }
+</script>
+</body>
+</html>

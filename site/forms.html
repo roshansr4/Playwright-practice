@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forms &amp; Inputs - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-body">
+<script>if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';</script>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" data-testid="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">PW</div>
+      <div><div class="brand-name">PW Practice</div><div class="brand-sub">Automation Training</div></div>
+    </div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" data-testid="nav-dashboard"><span class="nav-dot"></span> Dashboard</a>
+    <a href="alerts.html" data-testid="nav-alerts"><span class="nav-dot"></span> Alerts &amp; Dialogs</a>
+    <a href="forms.html" data-testid="nav-forms" class="active"><span class="nav-dot"></span> Forms &amp; Inputs</a>
+    <a href="tables.html" data-testid="nav-tables"><span class="nav-dot"></span> Tables &amp; Data</a>
+    <a href="dynamic.html" data-testid="nav-dynamic"><span class="nav-dot"></span> Dynamic Content</a>
+    <a href="interactions.html" data-testid="nav-interactions"><span class="nav-dot"></span> Interactions</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div class="user-info"><div class="user-name" id="username-display">admin</div><div class="user-role">Tester</div></div>
+    </div>
+    <button class="btn btn-outline btn-full btn-sm" data-testid="logout-button" onclick="logout()">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Forms &amp; Inputs</h1>
+      <p>Practice fill, check, selectOption, file upload, and form validation</p>
+    </div>
+    <span class="tag tag-blue">fill / check / selectOption</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ── SCENARIO 1: Text Inputs ── -->
+    <div class="card" data-testid="section-text-inputs">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>1. Basic Text Inputs</h3>
+          <p>text, email, password, number, url, search fields — use <code class="code">fill()</code></p>
+        </div>
+        <span class="tag tag-blue">fill()</span>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="text-input">Text Input</label>
+            <input type="text" id="text-input" data-testid="text-input" class="form-control" placeholder="Enter any text" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email-input">Email Input</label>
+            <input type="email" id="email-input" data-testid="email-input" class="form-control" placeholder="user@example.com" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="password-field">Password Input</label>
+            <div class="input-with-icon">
+              <input type="password" id="password-field" data-testid="password-field" class="form-control" placeholder="Enter password" />
+              <button type="button" class="input-icon" data-testid="toggle-pwd-field" onclick="toggleField('password-field', this)">&#128065;</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="number-input">Number Input (1-100)</label>
+            <input type="number" id="number-input" data-testid="number-input" class="form-control" placeholder="1-100" min="1" max="100" step="1" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="search-input">Search Input</label>
+            <input type="search" id="search-input" data-testid="search-input" class="form-control" placeholder="Search..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="url-input">URL Input</label>
+            <input type="url" id="url-input" data-testid="url-input" class="form-control" placeholder="https://example.com" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="disabled-input">Disabled Input (not interactable)</label>
+          <input type="text" id="disabled-input" data-testid="disabled-input" class="form-control" value="This field is disabled" disabled />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="readonly-input">Readonly Input (not editable)</label>
+          <input type="text" id="readonly-input" data-testid="readonly-input" class="form-control" value="This is read-only content" readonly />
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 2: Textarea ── -->
+    <div class="card" data-testid="section-textarea">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>2. Textarea with Character Counter</h3>
+          <p>Multi-line text input — test <code class="code">fill()</code> and character limit</p>
+        </div>
+        <span class="tag tag-blue">fill()</span>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label" for="textarea-input">Comments (max 200 chars)</label>
+          <textarea
+            id="textarea-input"
+            data-testid="textarea-input"
+            class="form-control"
+            placeholder="Write your comments here..."
+            rows="4"
+            maxlength="200"
+            style="resize:vertical;"
+            oninput="updateCharCount(this)"
+          ></textarea>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <span class="form-hint">Supports multi-line text</span>
+            <span class="text-muted text-sm" id="char-count" data-testid="char-count">0 / 200</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 3: Dropdown Selects ── -->
+    <div class="card" data-testid="section-dropdowns">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>3. Dropdown Selects</h3>
+          <p>Single select and multi-select — use <code class="code">selectOption()</code></p>
+        </div>
+        <span class="tag tag-blue">selectOption()</span>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="single-select">Single Select</label>
+            <select id="single-select" data-testid="single-select" class="form-control" onchange="showSelectResult('single-select-result', this.value)">
+              <option value="">-- Choose a browser --</option>
+              <option value="chrome">Google Chrome</option>
+              <option value="firefox">Mozilla Firefox</option>
+              <option value="safari">Safari</option>
+              <option value="edge">Microsoft Edge</option>
+              <option value="opera">Opera</option>
+            </select>
+            <div class="form-hint" id="single-select-result" data-testid="single-select-result"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="multi-select">Multi-Select (Ctrl/Cmd + click)</label>
+            <select id="multi-select" data-testid="multi-select" class="form-control" multiple size="5" onchange="showMultiSelectResult()">
+              <option value="playwright">Playwright</option>
+              <option value="selenium">Selenium</option>
+              <option value="cypress">Cypress</option>
+              <option value="puppeteer">Puppeteer</option>
+              <option value="webdriver">WebDriver IO</option>
+            </select>
+            <div class="form-hint" id="multi-select-result" data-testid="multi-select-result"></div>
+          </div>
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label" for="grouped-select">Grouped Select</label>
+          <select id="grouped-select" data-testid="grouped-select" class="form-control">
+            <option value="">-- Select role --</option>
+            <optgroup label="Testing">
+              <option value="qa-manual">QA Manual</option>
+              <option value="qa-automation">QA Automation</option>
+              <option value="sdet">SDET</option>
+            </optgroup>
+            <optgroup label="Development">
+              <option value="frontend">Frontend Dev</option>
+              <option value="backend">Backend Dev</option>
+              <option value="fullstack">Full Stack Dev</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 4: Checkboxes ── -->
+    <div class="card" data-testid="section-checkboxes">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>4. Checkboxes</h3>
+          <p>Individual and group checkboxes — use <code class="code">check()</code> / <code class="code">uncheck()</code></p>
+        </div>
+        <span class="tag tag-blue">check() / uncheck()</span>
+      </div>
+      <div class="card-body">
+        <label class="form-check" style="margin-bottom:12px;padding:8px;background:var(--light);border-radius:6px;">
+          <input type="checkbox" id="select-all-cb" data-testid="select-all-checkbox" onchange="toggleAllCheckboxes(this)" />
+          <label for="select-all-cb" style="font-weight:600;">Select All</label>
+        </label>
+
+        <div style="padding-left:12px;border-left:2px solid var(--border);margin-left:8px;">
+          <label class="form-check">
+            <input type="checkbox" id="cb-html" data-testid="checkbox-html" class="skill-cb" value="html" onchange="updateCheckboxSummary()" />
+            <label for="cb-html">HTML &amp; CSS</label>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" id="cb-js" data-testid="checkbox-js" class="skill-cb" value="javascript" onchange="updateCheckboxSummary()" />
+            <label for="cb-js">JavaScript</label>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" id="cb-playwright" data-testid="checkbox-playwright" class="skill-cb" value="playwright" onchange="updateCheckboxSummary()" checked />
+            <label for="cb-playwright">Playwright</label>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" id="cb-api" data-testid="checkbox-api" class="skill-cb" value="api-testing" onchange="updateCheckboxSummary()" />
+            <label for="cb-api">API Testing</label>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" id="cb-git" data-testid="checkbox-git" class="skill-cb" value="git" onchange="updateCheckboxSummary()" />
+            <label for="cb-git">Git &amp; Version Control</label>
+          </label>
+        </div>
+        <div class="result-box mt-12" data-testid="checkbox-result" id="checkbox-result">Selected: playwright</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 5: Radio Buttons ── -->
+    <div class="card" data-testid="section-radio">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>5. Radio Buttons</h3>
+          <p>Single-selection from a group — use <code class="code">check()</code> on the radio input</p>
+        </div>
+        <span class="tag tag-blue">check()</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Experience Level</div>
+            <label class="form-check">
+              <input type="radio" name="experience" id="exp-junior" data-testid="radio-junior" value="junior" onchange="showRadioResult()" />
+              <label for="exp-junior">Junior (0-2 years)</label>
+            </label>
+            <label class="form-check">
+              <input type="radio" name="experience" id="exp-mid" data-testid="radio-mid" value="mid" onchange="showRadioResult()" checked />
+              <label for="exp-mid">Mid-level (2-5 years)</label>
+            </label>
+            <label class="form-check">
+              <input type="radio" name="experience" id="exp-senior" data-testid="radio-senior" value="senior" onchange="showRadioResult()" />
+              <label for="exp-senior">Senior (5+ years)</label>
+            </label>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Preferred Tool</div>
+            <label class="form-check">
+              <input type="radio" name="tool" id="tool-playwright" data-testid="radio-playwright" value="playwright" onchange="showRadioResult()" checked />
+              <label for="tool-playwright">Playwright</label>
+            </label>
+            <label class="form-check">
+              <input type="radio" name="tool" id="tool-selenium" data-testid="radio-selenium" value="selenium" onchange="showRadioResult()" />
+              <label for="tool-selenium">Selenium</label>
+            </label>
+            <label class="form-check">
+              <input type="radio" name="tool" id="tool-cypress" data-testid="radio-cypress" value="cypress" onchange="showRadioResult()" />
+              <label for="tool-cypress">Cypress</label>
+            </label>
+          </div>
+        </div>
+        <div class="result-box mt-12" data-testid="radio-result" id="radio-result">Selected: experience=mid, tool=playwright</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 6: Special Inputs ── -->
+    <div class="card" data-testid="section-special-inputs">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>6. Date, Time, Range &amp; Color Inputs</h3>
+          <p>Specialized input types — use <code class="code">fill()</code> for date/time, <code class="code">evaluate()</code> for range/color</p>
+        </div>
+        <span class="tag tag-purple">specialized</span>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="date-input">Date Picker</label>
+            <input type="date" id="date-input" data-testid="date-input" class="form-control" />
+            <div class="form-hint">fill('2024-12-25') in Playwright</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="time-input">Time Picker</label>
+            <input type="time" id="time-input" data-testid="time-input" class="form-control" />
+            <div class="form-hint">fill('14:30') in Playwright</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="datetime-input">Date-Time Picker</label>
+            <input type="datetime-local" id="datetime-input" data-testid="datetime-input" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="color-input">Color Picker</label>
+            <input type="color" id="color-input" data-testid="color-input" value="#4361ee" style="height:38px;width:100%;cursor:pointer;" oninput="document.getElementById('color-display').textContent=this.value" />
+            <div class="form-hint">Value: <span id="color-display" data-testid="color-display">#4361ee</span></div>
+          </div>
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label" for="range-input">Range Slider: <span id="range-display" data-testid="range-display">50</span></label>
+          <input type="range" id="range-input" data-testid="range-input" min="0" max="100" value="50" oninput="document.getElementById('range-display').textContent=this.value" />
+          <div style="display:flex;justify-content:space-between;">
+            <span class="text-sm text-muted">0</span>
+            <span class="text-sm text-muted">100</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 7: File Upload ── -->
+    <div class="card" data-testid="section-file-upload">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>7. File Upload</h3>
+          <p>Single and multiple file upload — use <code class="code">setInputFiles()</code></p>
+        </div>
+        <span class="tag tag-green">setInputFiles()</span>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="single-file">Single File Upload</label>
+            <input type="file" id="single-file" data-testid="single-file-input" class="form-control" style="padding:5px;" onchange="showFileInfo('single-file-result', this)" />
+            <div class="form-hint" id="single-file-result" data-testid="single-file-result">No file selected</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="multi-file">Multiple Files Upload</label>
+            <input type="file" id="multi-file" data-testid="multi-file-input" class="form-control" multiple style="padding:5px;" onchange="showFileInfo('multi-file-result', this)" />
+            <div class="form-hint" id="multi-file-result" data-testid="multi-file-result">No files selected</div>
+          </div>
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label" for="image-file">Image Only Upload (accept=image/*)</label>
+          <input type="file" id="image-file" data-testid="image-file-input" class="form-control" accept="image/*" style="padding:5px;" onchange="showFileInfo('image-file-result', this)" />
+          <div class="form-hint" id="image-file-result" data-testid="image-file-result">Accepts: .jpg, .png, .gif, .svg etc.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 8: Drag to Upload ── -->
+    <div class="card" data-testid="section-dropzone">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>8. Drag &amp; Drop File Upload</h3>
+          <p>Drop zone for file upload — use <code class="code">setInputFiles()</code> on the hidden input</p>
+        </div>
+        <span class="tag tag-green">setInputFiles()</span>
+      </div>
+      <div class="card-body">
+        <div
+          id="dropzone"
+          data-testid="dropzone"
+          style="border:2px dashed var(--border);border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--light);"
+          ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event)"
+          onclick="document.getElementById('dropzone-input').click()"
+        >
+          <div style="font-size:32px;margin-bottom:8px;">&#128228;</div>
+          <div style="font-weight:600;margin-bottom:4px;" data-testid="dropzone-text" id="dropzone-text">Drop files here or click to browse</div>
+          <div class="text-muted text-sm">Any file type accepted</div>
+        </div>
+        <input type="file" id="dropzone-input" data-testid="dropzone-input" multiple style="display:none;" onchange="showDropResult(this)" />
+        <div class="result-box mt-12 hidden" data-testid="dropzone-result" id="dropzone-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 9: Form Validation ── -->
+    <div class="card" data-testid="section-validation">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>9. Form Validation</h3>
+          <p>Required fields, pattern matching, min/max length — test error messages</p>
+        </div>
+        <span class="tag tag-red">validation</span>
+      </div>
+      <div class="card-body">
+        <form id="validation-form" data-testid="validation-form" novalidate onsubmit="handleValidation(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" for="val-firstname">First Name</label>
+              <input type="text" id="val-firstname" data-testid="val-firstname" class="form-control" placeholder="Min 2 characters" minlength="2" />
+              <div class="form-error" id="val-firstname-err" data-testid="val-firstname-error">First name must be at least 2 characters.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="val-lastname">Last Name</label>
+              <input type="text" id="val-lastname" data-testid="val-lastname" class="form-control" placeholder="Last name" />
+              <div class="form-error" id="val-lastname-err" data-testid="val-lastname-error">Last name is required.</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" for="val-email">Email</label>
+              <input type="email" id="val-email" data-testid="val-email" class="form-control" placeholder="user@example.com" />
+              <div class="form-error" id="val-email-err" data-testid="val-email-error">Please enter a valid email address.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="val-phone">Phone (10 digits)</label>
+              <input type="tel" id="val-phone" data-testid="val-phone" class="form-control" placeholder="0400000000" pattern="[0-9]{10}" />
+              <div class="form-error" id="val-phone-err" data-testid="val-phone-error">Enter a valid 10-digit phone number.</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="val-password">Password (min 8 chars)</label>
+            <input type="password" id="val-password" data-testid="val-password" class="form-control" placeholder="Min 8 characters" minlength="8" />
+            <div class="form-error" id="val-password-err" data-testid="val-password-error">Password must be at least 8 characters.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="val-terms" data-testid="val-terms-checkbox" />
+              <label for="val-terms">I agree to the <a href="#" style="color:var(--primary);">Terms &amp; Conditions</a></label>
+            </label>
+            <div class="form-error" id="val-terms-err" data-testid="val-terms-error">You must accept the terms.</div>
+          </div>
+          <div class="flex gap-8">
+            <button type="submit" class="btn btn-primary" data-testid="validation-submit-btn">Submit Form</button>
+            <button type="reset" class="btn btn-outline" data-testid="validation-reset-btn" onclick="resetValidation()">Reset</button>
+          </div>
+          <div class="alert alert-success hidden mt-12" data-testid="validation-success" id="validation-success">
+            Form submitted successfully! All fields are valid.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 10: Dynamic Form Fields ── -->
+    <div class="card" data-testid="section-dynamic-fields">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>10. Dynamic Form Fields</h3>
+          <p>Add and remove fields dynamically — test that new fields are interactable</p>
+        </div>
+        <span class="tag tag-purple">dynamic</span>
+      </div>
+      <div class="card-body">
+        <div id="dynamic-fields" data-testid="dynamic-fields-container">
+          <div class="dynamic-field flex gap-8 mb-16 items-center" data-testid="dynamic-field-1">
+            <input type="text" class="form-control" data-testid="dynamic-field-input-1" placeholder="Field 1" />
+            <button class="btn btn-ghost btn-sm" onclick="removeDynField(this)" title="Remove">&#10005;</button>
+          </div>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn btn-outline" data-testid="add-field-btn" onclick="addDynField()">+ Add Field</button>
+          <button class="btn btn-primary" data-testid="submit-dynamic-btn" onclick="submitDynFields()">Submit</button>
+        </div>
+        <div class="result-box mt-12 hidden" data-testid="dynamic-fields-result" id="dynamic-fields-result"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 11: Auto-complete Input ── -->
+    <div class="card" data-testid="section-autocomplete">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>11. Autocomplete / Suggestions</h3>
+          <p>Type to see suggestions, then click to select — tests keyboard navigation</p>
+        </div>
+        <span class="tag tag-cyan">autocomplete</span>
+      </div>
+      <div class="card-body">
+        <div class="form-group" style="position:relative;">
+          <label class="form-label" for="autocomplete-input">Search Countries</label>
+          <input type="text" id="autocomplete-input" data-testid="autocomplete-input" class="form-control" placeholder="Type a country name..." oninput="showSuggestions(this.value)" autocomplete="off" />
+          <div id="suggestions-list" data-testid="suggestions-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:0 0 8px 8px;box-shadow:var(--shadow);z-index:100;max-height:200px;overflow-y:auto;"></div>
+        </div>
+        <div class="form-hint" id="autocomplete-result" data-testid="autocomplete-result">No country selected</div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 12: Form Submit Result ── -->
+    <div class="card" data-testid="section-full-form">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>12. Complete Registration Form</h3>
+          <p>A full form combining all input types — fill all fields and submit</p>
+        </div>
+        <span class="tag tag-green">end-to-end form</span>
+      </div>
+      <div class="card-body">
+        <form id="full-form" data-testid="full-form" novalidate onsubmit="handleFullForm(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" for="ff-name">Full Name</label>
+              <input type="text" id="ff-name" data-testid="ff-name" class="form-control" placeholder="John Doe" />
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="ff-email">Email</label>
+              <input type="email" id="ff-email" data-testid="ff-email" class="form-control" placeholder="john@example.com" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" for="ff-role">Role</label>
+              <select id="ff-role" data-testid="ff-role" class="form-control">
+                <option value="">-- Select role --</option>
+                <option value="qa-automation">QA Automation Engineer</option>
+                <option value="sdet">SDET</option>
+                <option value="qa-manual">QA Manual Tester</option>
+                <option value="dev">Software Developer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ff-dob">Date of Birth</label>
+              <input type="date" id="ff-dob" data-testid="ff-dob" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Skills</label>
+            <div class="flex gap-12 flex-wrap">
+              <label class="form-check"><input type="checkbox" value="playwright" data-testid="ff-skill-playwright" class="ff-skill" /><label>Playwright</label></label>
+              <label class="form-check"><input type="checkbox" value="selenium" data-testid="ff-skill-selenium" class="ff-skill" /><label>Selenium</label></label>
+              <label class="form-check"><input type="checkbox" value="api" data-testid="ff-skill-api" class="ff-skill" /><label>API Testing</label></label>
+              <label class="form-check"><input type="checkbox" value="ci" data-testid="ff-skill-ci" class="ff-skill" /><label>CI/CD</label></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Experience</label>
+            <div class="flex gap-12">
+              <label class="form-check"><input type="radio" name="ff-exp" value="junior" data-testid="ff-exp-junior" /><label>Junior</label></label>
+              <label class="form-check"><input type="radio" name="ff-exp" value="mid" data-testid="ff-exp-mid" /><label>Mid</label></label>
+              <label class="form-check"><input type="radio" name="ff-exp" value="senior" data-testid="ff-exp-senior" /><label>Senior</label></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ff-bio">Short Bio</label>
+            <textarea id="ff-bio" data-testid="ff-bio" class="form-control" rows="3" placeholder="Tell us about yourself..." style="resize:vertical;"></textarea>
+          </div>
+          <div class="flex gap-8">
+            <button type="submit" class="btn btn-primary" data-testid="ff-submit-btn">Register</button>
+            <button type="reset" class="btn btn-outline" data-testid="ff-reset-btn">Clear Form</button>
+          </div>
+        </form>
+        <div class="alert alert-success hidden mt-12" data-testid="full-form-success" id="full-form-success"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const username = sessionStorage.getItem('username') || 'admin';
+  document.getElementById('username-display').textContent = username;
+  document.getElementById('user-avatar').textContent = username[0].toUpperCase();
+  function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+  function toggleField(id, btn) {
+    const el = document.getElementById(id);
+    const show = el.type === 'password';
+    el.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? '&#128584;' : '&#128065;';
+  }
+
+  function updateCharCount(el) {
+    document.getElementById('char-count').textContent = `${el.value.length} / 200`;
+  }
+
+  function showSelectResult(id, val) {
+    document.getElementById(id).textContent = val ? `Selected: ${val}` : '';
+  }
+
+  function showMultiSelectResult() {
+    const sel = document.getElementById('multi-select');
+    const vals = [...sel.selectedOptions].map(o => o.value);
+    document.getElementById('multi-select-result').textContent = vals.length ? `Selected: ${vals.join(', ')}` : '';
+  }
+
+  function toggleAllCheckboxes(masterCb) {
+    document.querySelectorAll('.skill-cb').forEach(cb => {
+      cb.checked = masterCb.checked;
+    });
+    updateCheckboxSummary();
+  }
+
+  function updateCheckboxSummary() {
+    const checked = [...document.querySelectorAll('.skill-cb:checked')].map(c => c.value);
+    const master = document.getElementById('select-all-cb');
+    const all = document.querySelectorAll('.skill-cb');
+    master.indeterminate = checked.length > 0 && checked.length < all.length;
+    master.checked = checked.length === all.length;
+    document.getElementById('checkbox-result').textContent = checked.length ? `Selected: ${checked.join(', ')}` : 'None selected';
+  }
+
+  function showRadioResult() {
+    const exp = document.querySelector('input[name="experience"]:checked');
+    const tool = document.querySelector('input[name="tool"]:checked');
+    document.getElementById('radio-result').textContent =
+      `Selected: experience=${exp ? exp.value : 'none'}, tool=${tool ? tool.value : 'none'}`;
+  }
+
+  function showFileInfo(resultId, input) {
+    const files = input.files;
+    if (files.length === 0) { document.getElementById(resultId).textContent = 'No file selected'; return; }
+    const info = [...files].map(f => `${f.name} (${(f.size/1024).toFixed(1)} KB)`).join(', ');
+    document.getElementById(resultId).textContent = info;
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').style.borderColor = 'var(--primary)';
+    document.getElementById('dropzone').style.background = 'rgba(67,97,238,0.05)';
+    document.getElementById('dropzone-text').textContent = 'Drop files here!';
+  }
+
+  function handleDragLeave(e) {
+    document.getElementById('dropzone').style.borderColor = 'var(--border)';
+    document.getElementById('dropzone').style.background = 'var(--light)';
+    document.getElementById('dropzone-text').textContent = 'Drop files here or click to browse';
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    handleDragLeave(e);
+    const files = e.dataTransfer.files;
+    const input = document.getElementById('dropzone-input');
+    // Set files via DataTransfer
+    const dt = new DataTransfer();
+    [...files].forEach(f => dt.items.add(f));
+    input.files = dt.files;
+    showDropResult(input);
+  }
+
+  function showDropResult(input) {
+    const files = [...input.files];
+    if (!files.length) return;
+    const result = document.getElementById('dropzone-result');
+    result.textContent = `Uploaded: ${files.map(f => `${f.name} (${(f.size/1024).toFixed(1)} KB)`).join(', ')}`;
+    result.classList.remove('hidden');
+    document.getElementById('dropzone-text').textContent = `${files.length} file(s) selected`;
+  }
+
+  // Form validation
+  function handleValidation(e) {
+    e.preventDefault();
+    let valid = true;
+    const fields = [
+      { id: 'val-firstname', errId: 'val-firstname-err', check: v => v.length >= 2 },
+      { id: 'val-lastname', errId: 'val-lastname-err', check: v => v.length > 0 },
+      { id: 'val-email', errId: 'val-email-err', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+      { id: 'val-phone', errId: 'val-phone-err', check: v => /^[0-9]{10}$/.test(v) },
+      { id: 'val-password', errId: 'val-password-err', check: v => v.length >= 8 },
+    ];
+    fields.forEach(f => {
+      const el = document.getElementById(f.id);
+      const err = document.getElementById(f.errId);
+      const ok = f.check(el.value.trim());
+      el.classList.toggle('is-invalid', !ok);
+      el.classList.toggle('is-valid', ok);
+      err.classList.toggle('visible', !ok);
+      if (!ok) valid = false;
+    });
+    const terms = document.getElementById('val-terms');
+    const termsErr = document.getElementById('val-terms-err');
+    terms.parentElement.style.outline = terms.checked ? '' : '2px solid var(--danger)';
+    termsErr.classList.toggle('visible', !terms.checked);
+    if (!terms.checked) valid = false;
+
+    document.getElementById('validation-success').classList.toggle('hidden', !valid);
+  }
+
+  function resetValidation() {
+    document.querySelectorAll('#validation-form .is-invalid, #validation-form .is-valid').forEach(el => {
+      el.classList.remove('is-invalid', 'is-valid');
+    });
+    document.querySelectorAll('#validation-form .form-error').forEach(el => el.classList.remove('visible'));
+    document.getElementById('validation-success').classList.add('hidden');
+    document.getElementById('val-terms').parentElement.style.outline = '';
+  }
+
+  // Dynamic fields
+  let dynCount = 1;
+  function addDynField() {
+    dynCount++;
+    const container = document.getElementById('dynamic-fields');
+    const div = document.createElement('div');
+    div.className = 'dynamic-field flex gap-8 mb-16 items-center';
+    div.setAttribute('data-testid', `dynamic-field-${dynCount}`);
+    div.innerHTML = `<input type="text" class="form-control" data-testid="dynamic-field-input-${dynCount}" placeholder="Field ${dynCount}" /><button class="btn btn-ghost btn-sm" onclick="removeDynField(this)" title="Remove">&#10005;</button>`;
+    container.appendChild(div);
+  }
+
+  function removeDynField(btn) {
+    const container = document.getElementById('dynamic-fields');
+    if (container.children.length > 1) {
+      btn.closest('.dynamic-field').remove();
+    }
+  }
+
+  function submitDynFields() {
+    const vals = [...document.querySelectorAll('.dynamic-field input')].map(i => i.value || '(empty)');
+    const result = document.getElementById('dynamic-fields-result');
+    result.textContent = `Values: [${vals.join(', ')}]`;
+    result.classList.remove('hidden');
+  }
+
+  // Autocomplete
+  const countries = ['Australia','Brazil','Canada','China','Denmark','Egypt','Finland','France','Germany','Ghana','India','Indonesia','Ireland','Italy','Japan','Kenya','Mexico','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Philippines','Portugal','Russia','Saudi Arabia','Singapore','South Africa','South Korea','Spain','Sweden','Switzerland','Thailand','Turkey','Ukraine','United Kingdom','United States','Vietnam'];
+
+  function showSuggestions(val) {
+    const list = document.getElementById('suggestions-list');
+    if (!val || val.length < 1) { list.style.display = 'none'; return; }
+    const matches = countries.filter(c => c.toLowerCase().startsWith(val.toLowerCase())).slice(0, 6);
+    if (!matches.length) { list.style.display = 'none'; return; }
+    list.innerHTML = matches.map(c => `<div data-testid="suggestion-${c.toLowerCase().replace(/\s/g,'-')}" style="padding:8px 14px;cursor:pointer;font-size:13px;" onmousedown="selectSuggestion('${c}')" onmouseover="this.style.background='var(--light)'" onmouseout="this.style.background='white'">${c}</div>`).join('');
+    list.style.display = 'block';
+  }
+
+  function selectSuggestion(val) {
+    document.getElementById('autocomplete-input').value = val;
+    document.getElementById('suggestions-list').style.display = 'none';
+    document.getElementById('autocomplete-result').textContent = `Selected country: ${val}`;
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#autocomplete-input')) {
+      document.getElementById('suggestions-list').style.display = 'none';
+    }
+  });
+
+  // Full form
+  function handleFullForm(e) {
+    e.preventDefault();
+    const name = document.getElementById('ff-name').value;
+    const email = document.getElementById('ff-email').value;
+    const role = document.getElementById('ff-role').value;
+    const skills = [...document.querySelectorAll('.ff-skill:checked')].map(c => c.value);
+    const exp = document.querySelector('input[name="ff-exp"]:checked');
+    const success = document.getElementById('full-form-success');
+    success.classList.remove('hidden');
+    success.innerHTML = `
+      <strong>Registration Successful!</strong><br>
+      Name: ${name || '(none)'} | Email: ${email || '(none)'} | Role: ${role || '(none)'}<br>
+      Skills: ${skills.join(', ') || 'none'} | Experience: ${exp ? exp.value : 'not selected'}
+    `;
+  }
+</script>
+</body>
+</html>

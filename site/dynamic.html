@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Content - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .lazy-img { width:100%; height:100px; background:var(--light); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:12px; overflow:hidden; }
+    .lazy-img img { width:100%; height:100%; object-fit:cover; display:none; }
+    .lazy-img.loaded img { display:block; }
+    .lazy-img.loaded span { display:none; }
+    .flash { animation: flash-anim 0.3s ease; }
+    @keyframes flash-anim { 0%{opacity:1} 50%{opacity:0.2} 100%{opacity:1} }
+    .count-up { font-size:32px; font-weight:800; color:var(--primary); }
+    .infinite-item { padding:12px 16px; background:white; border:1px solid var(--border); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; font-size:14px; }
+  </style>
+</head>
+<body class="app-body">
+<script>if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';</script>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" data-testid="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">PW</div>
+      <div><div class="brand-name">PW Practice</div><div class="brand-sub">Automation Training</div></div>
+    </div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" data-testid="nav-dashboard"><span class="nav-dot"></span> Dashboard</a>
+    <a href="alerts.html" data-testid="nav-alerts"><span class="nav-dot"></span> Alerts &amp; Dialogs</a>
+    <a href="forms.html" data-testid="nav-forms"><span class="nav-dot"></span> Forms &amp; Inputs</a>
+    <a href="tables.html" data-testid="nav-tables"><span class="nav-dot"></span> Tables &amp; Data</a>
+    <a href="dynamic.html" data-testid="nav-dynamic" class="active"><span class="nav-dot"></span> Dynamic Content</a>
+    <a href="interactions.html" data-testid="nav-interactions"><span class="nav-dot"></span> Interactions</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div class="user-info"><div class="user-name" id="username-display">admin</div><div class="user-role">Tester</div></div>
+    </div>
+    <button class="btn btn-outline btn-full btn-sm" data-testid="logout-button" onclick="logout()">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Dynamic Content &amp; Waits</h1>
+      <p>Practice waitForSelector, waitForVisible, polling, and loading states</p>
+    </div>
+    <span class="tag tag-yellow">waitFor* methods</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ── SCENARIO 1: Delayed Element (3s) ── -->
+    <div class="card" data-testid="section-delayed-3s">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>1. Element Appears After 3 Seconds</h3>
+          <p>Click the button, then wait for the element to appear — use <code class="code">waitForSelector</code></p>
+        </div>
+        <span class="tag tag-yellow">3 second delay</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.waitForSelector('[data-testid="revealed-3s"]')</code>
+          or <code>await expect(locator).toBeVisible()</code>
+        </div>
+        <button class="btn btn-primary" data-testid="reveal-3s-btn" id="reveal-3s-btn" onclick="revealAfterDelay('reveal-3s-container', 'revealed-3s', 3000, 'reveal-3s-btn', '3 seconds')">
+          Click to Load (3s delay)
+        </button>
+        <div id="reveal-3s-container" data-testid="reveal-3s-container" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 2: Delayed Element (5s) ── -->
+    <div class="card" data-testid="section-delayed-5s">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>2. Element Appears After 5 Seconds</h3>
+          <p>Longer delay — test that Playwright waits long enough (default timeout is 30s)</p>
+        </div>
+        <span class="tag tag-red">5 second delay</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Default timeout is 30s. Use <code>{ timeout: 10000 }</code> to set a custom timeout.
+        </div>
+        <button class="btn btn-warning" data-testid="reveal-5s-btn" id="reveal-5s-btn" onclick="revealAfterDelay('reveal-5s-container', 'revealed-5s', 5000, 'reveal-5s-btn', '5 seconds')">
+          Click to Load (5s delay)
+        </button>
+        <div id="reveal-5s-container" data-testid="reveal-5s-container" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 3: Loading Spinner ── -->
+    <div class="card" data-testid="section-spinner">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>3. Loading Spinner → Content</h3>
+          <p>Spinner shows while loading, then disappears when content arrives</p>
+        </div>
+        <span class="tag tag-blue">waitForHidden</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Wait for spinner to disappear: <code>await expect(spinner).toBeHidden()</code>
+          then check <code>await expect(content).toBeVisible()</code>
+        </div>
+        <button class="btn btn-primary" data-testid="load-spinner-btn" onclick="loadWithSpinner()">Load Data</button>
+        <div id="spinner-container" data-testid="spinner-container" style="margin-top:14px;">
+          <div class="text-muted text-sm">Click button to start loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 4: Skeleton Loader ── -->
+    <div class="card" data-testid="section-skeleton">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>4. Skeleton Loading → Real Content</h3>
+          <p>Skeleton placeholder replaces with actual content — tests data-loading attribute</p>
+        </div>
+        <span class="tag tag-blue">data-loading attribute</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Check <code>await expect(el).toHaveAttribute('data-loading', 'false')</code>
+          then assert real content is visible.
+        </div>
+        <button class="btn btn-info" data-testid="load-skeleton-btn" onclick="loadSkeleton()">Fetch User Profile</button>
+        <div id="skeleton-container" data-testid="skeleton-container" data-loading="false" style="margin-top:14px;">
+          <div class="text-muted text-sm">Click button to simulate fetching profile...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 5: Progress Bar ── -->
+    <div class="card" data-testid="section-progress">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>5. Animated Progress Bar</h3>
+          <p>Progress fills from 0% to 100% — test with <code class="code">waitForFunction</code></p>
+        </div>
+        <span class="tag tag-green">waitForFunction</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          <code>await page.waitForFunction(() => document.querySelector('[data-testid="progress-bar"]').style.width === '100%')</code>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <button class="btn btn-success" data-testid="start-progress-btn" onclick="startProgress()">Start Progress</button>
+          <button class="btn btn-outline" data-testid="reset-progress-btn" onclick="resetProgress()">Reset</button>
+          <span data-testid="progress-label" id="progress-label" style="font-weight:600;color:var(--primary);">0%</span>
+        </div>
+        <div class="progress">
+          <div
+            class="progress-bar"
+            data-testid="progress-bar"
+            id="progress-bar"
+            style="width:0%;transition:width 0.5s;"
+          ></div>
+        </div>
+        <div class="alert alert-success hidden mt-12" data-testid="progress-complete" id="progress-complete">
+          Progress complete! All tasks finished.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 6: Auto-Refresh ── -->
+    <div class="card" data-testid="section-auto-refresh">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>6. Auto-Refreshing Content</h3>
+          <p>Content updates every 3 seconds — use <code class="code">waitForFunction</code> to poll for change</p>
+        </div>
+        <span class="tag tag-yellow">polling</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          The content updates automatically every 3 seconds. Use
+          <code>page.waitForFunction</code> or <code>expect.poll()</code> to assert after update.
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <button class="btn btn-primary" data-testid="start-refresh-btn" id="start-refresh-btn" onclick="startAutoRefresh()">Start Auto-Refresh</button>
+          <button class="btn btn-outline" data-testid="stop-refresh-btn" id="stop-refresh-btn" onclick="stopAutoRefresh()" disabled>Stop</button>
+        </div>
+        <div style="background:var(--light);border-radius:8px;padding:16px;" data-testid="refresh-content-box">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Live Data Feed</div>
+          <div style="font-size:20px;font-weight:700;" data-testid="refresh-value" id="refresh-value">--</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Last updated: <span data-testid="refresh-timestamp" id="refresh-timestamp">not started</span></div>
+          <div style="font-size:12px;margin-top:8px;" data-testid="refresh-counter" id="refresh-counter">Updates: 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 7: Lazy Load Images ── -->
+    <div class="card" data-testid="section-lazy-images">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>7. Lazy-Loaded Content (Scroll to Reveal)</h3>
+          <p>Items load as you scroll down — tests IntersectionObserver-based loading</p>
+        </div>
+        <span class="tag tag-purple">scroll &amp; wait</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          Use <code>element.scrollIntoViewIfNeeded()</code> then <code>waitForSelector</code>.
+          Each card becomes visible when scrolled into view.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div class="lazy-card" data-testid="lazy-card-1" style="opacity:0;transform:translateY(20px);transition:all 0.5s;background:white;border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:24px;margin-bottom:8px;">&#127968;</div>
+            <div style="font-weight:600;font-size:13px;" data-testid="lazy-card-1-text">Lazy Card 1</div>
+            <div style="font-size:12px;color:var(--text-muted);">Loaded on scroll</div>
+          </div>
+          <div class="lazy-card" data-testid="lazy-card-2" style="opacity:0;transform:translateY(20px);transition:all 0.5s 0.15s;background:white;border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:24px;margin-bottom:8px;">&#127775;</div>
+            <div style="font-weight:600;font-size:13px;" data-testid="lazy-card-2-text">Lazy Card 2</div>
+            <div style="font-size:12px;color:var(--text-muted);">Loaded on scroll</div>
+          </div>
+          <div class="lazy-card" data-testid="lazy-card-3" style="opacity:0;transform:translateY(20px);transition:all 0.5s 0.3s;background:white;border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-size:24px;margin-bottom:8px;">&#127919;</div>
+            <div style="font-weight:600;font-size:13px;" data-testid="lazy-card-3-text">Lazy Card 3</div>
+            <div style="font-size:12px;color:var(--text-muted);">Loaded on scroll</div>
+          </div>
+        </div>
+        <button class="btn btn-outline mt-12" data-testid="reveal-lazy-btn" onclick="revealLazyCards()">Reveal All (simulate scroll)</button>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 8: Flaky Element ── -->
+    <div class="card" data-testid="section-flaky">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>8. Flaky / Unstable Element</h3>
+          <p>Element appears and disappears — use <code class="code">waitForSelector</code> or polling with retry</p>
+        </div>
+        <span class="tag tag-red">retry / polling</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          This element randomly shows and hides. Use <code>expect.poll()</code> or
+          <code>waitForSelector</code> with a sufficient timeout for flaky elements.
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <button class="btn btn-warning" data-testid="start-flaky-btn" onclick="startFlaky()">Start Flaky Element</button>
+          <button class="btn btn-outline" data-testid="stop-flaky-btn" onclick="stopFlaky()">Stop</button>
+        </div>
+        <div id="flaky-container" data-testid="flaky-container" style="min-height:60px;display:flex;align-items:center;">
+          <div class="text-muted text-sm">Click Start to begin...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 9: Count-Up Animation ── -->
+    <div class="card" data-testid="section-count-up">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>9. Animated Counter</h3>
+          <p>Value animates from 0 to a target — assert final value using <code class="code">waitForFunction</code></p>
+        </div>
+        <span class="tag tag-green">waitForFunction</span>
+      </div>
+      <div class="card-body">
+        <div class="flex gap-12 flex-wrap" style="margin-bottom:16px;">
+          <button class="btn btn-primary" data-testid="count-to-100-btn" onclick="countUp(100, 1500)">Count to 100</button>
+          <button class="btn btn-info" data-testid="count-to-1000-btn" onclick="countUp(1000, 2000)">Count to 1,000</button>
+          <button class="btn btn-outline" data-testid="reset-counter-btn" onclick="resetCounter()">Reset</button>
+        </div>
+        <div style="text-align:center;">
+          <div class="count-up" data-testid="counter-display" id="counter-display">0</div>
+          <div class="text-muted text-sm mt-8" data-testid="counter-status" id="counter-status">Waiting...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 10: Page Reload / Navigation State ── -->
+    <div class="card" data-testid="section-page-state">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>10. Page Load States &amp; Network</h3>
+          <p>Test <code class="code">waitForLoadState</code> with different network conditions</p>
+        </div>
+        <span class="tag tag-cyan">waitForLoadState</span>
+      </div>
+      <div class="card-body">
+        <div class="info-panel">
+          States: <code>'load'</code> (full page load), <code>'domcontentloaded'</code> (DOM ready), <code>'networkidle'</code> (no network for 500ms).
+        </div>
+        <div class="flex gap-8 flex-wrap">
+          <div style="background:var(--light);border-radius:8px;padding:14px;flex:1;min-width:160px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">DOM State</div>
+            <span class="badge badge-success" data-testid="dom-state">domcontentloaded</span>
+          </div>
+          <div style="background:var(--light);border-radius:8px;padding:14px;flex:1;min-width:160px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Load State</div>
+            <span class="badge badge-success" data-testid="load-state">load</span>
+          </div>
+          <div style="background:var(--light);border-radius:8px;padding:14px;flex:1;min-width:160px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Page Title</div>
+            <span class="badge badge-info" data-testid="page-title-display" id="page-title-display"></span>
+          </div>
+          <div style="background:var(--light);border-radius:8px;padding:14px;flex:1;min-width:160px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">URL Path</div>
+            <span class="badge badge-info" data-testid="url-path-display" id="url-path-display"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const username = sessionStorage.getItem('username') || 'admin';
+  document.getElementById('username-display').textContent = username;
+  document.getElementById('user-avatar').textContent = username[0].toUpperCase();
+  function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+  // Page info
+  document.getElementById('page-title-display').textContent = document.title;
+  document.getElementById('url-path-display').textContent = window.location.pathname.split('/').pop() || '/';
+
+  // ── Generic reveal with delay ──
+  function revealAfterDelay(containerId, testId, delay, btnId, label) {
+    const container = document.getElementById(containerId);
+    const btn = document.getElementById(btnId);
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+    container.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:13px;"><div class="spinner spinner-sm"></div>Loading... (${label} delay)</div>`;
+    setTimeout(() => {
+      container.innerHTML = `
+        <div class="alert alert-success" data-testid="${testId}" style="margin:0;">
+          <strong>Element revealed after ${label}!</strong>
+          Timestamp: ${new Date().toLocaleTimeString()}
+        </div>
+      `;
+      if (btn) { btn.disabled = false; btn.textContent = `Click to Load (${label === '3 seconds' ? '3s' : '5s'} delay)`; }
+    }, delay);
+  }
+
+  // ── Spinner ──
+  function loadWithSpinner() {
+    const c = document.getElementById('spinner-container');
+    c.innerHTML = `<div style="display:flex;align-items:center;gap:12px;"><div class="spinner" data-testid="loading-spinner"></div><span style="color:var(--text-muted);">Fetching data from server...</span></div>`;
+    setTimeout(() => {
+      c.innerHTML = `
+        <div data-testid="spinner-result" style="padding:14px;background:var(--light);border-radius:8px;">
+          <div style="font-weight:600;margin-bottom:6px;">Data Loaded Successfully</div>
+          <div style="font-size:13px;color:var(--text-muted);">
+            Records: <strong>42</strong> &nbsp;|&nbsp;
+            Time: <strong>${new Date().toLocaleTimeString()}</strong> &nbsp;|&nbsp;
+            Status: <span class="badge badge-success">200 OK</span>
+          </div>
+        </div>
+      `;
+    }, 2500);
+  }
+
+  // ── Skeleton ──
+  function loadSkeleton() {
+    const c = document.getElementById('skeleton-container');
+    c.setAttribute('data-loading', 'true');
+    c.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:white;border-radius:8px;border:1px solid var(--border);">
+        <div class="skeleton" style="width:48px;height:48px;border-radius:50%;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:12px;width:40%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:12px;width:80%;"></div>
+        </div>
+      </div>
+    `;
+    setTimeout(() => {
+      c.setAttribute('data-loading', 'false');
+      c.innerHTML = `
+        <div data-testid="skeleton-loaded" style="display:flex;align-items:center;gap:12px;padding:14px;background:white;border-radius:8px;border:1px solid var(--border);">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;flex-shrink:0;">J</div>
+          <div>
+            <div style="font-weight:600;font-size:15px;" data-testid="skeleton-name">Jane Doe</div>
+            <div style="font-size:13px;color:var(--text-muted);" data-testid="skeleton-role">QA Automation Engineer</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" data-testid="skeleton-email">jane.doe@example.com</div>
+          </div>
+        </div>
+      `;
+    }, 2000);
+  }
+
+  // ── Progress Bar ──
+  let progressInterval = null;
+  function startProgress() {
+    resetProgress();
+    let pct = 0;
+    document.getElementById('progress-complete').classList.add('hidden');
+    progressInterval = setInterval(() => {
+      pct = Math.min(100, pct + Math.random() * 8 + 2);
+      const pctInt = Math.round(pct);
+      document.getElementById('progress-bar').style.width = pctInt + '%';
+      document.getElementById('progress-label').textContent = pctInt + '%';
+      if (pct >= 100) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+        document.getElementById('progress-bar').style.width = '100%';
+        document.getElementById('progress-label').textContent = '100%';
+        document.getElementById('progress-complete').classList.remove('hidden');
+      }
+    }, 400);
+  }
+
+  function resetProgress() {
+    if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('progress-label').textContent = '0%';
+    document.getElementById('progress-complete').classList.add('hidden');
+  }
+
+  // ── Auto-Refresh ──
+  let refreshInterval = null;
+  let refreshCount = 0;
+  const refreshData = ['12.4°C','15.1°C','18.7°C','22.3°C','19.0°C','14.5°C','11.2°C','20.8°C'];
+  function startAutoRefresh() {
+    document.getElementById('start-refresh-btn').disabled = true;
+    document.getElementById('stop-refresh-btn').disabled = false;
+    refreshCount = 0;
+    updateRefreshContent();
+    refreshInterval = setInterval(updateRefreshContent, 3000);
+  }
+  function updateRefreshContent() {
+    refreshCount++;
+    const val = refreshData[Math.floor(Math.random() * refreshData.length)];
+    document.getElementById('refresh-value').textContent = val;
+    document.getElementById('refresh-value').classList.add('flash');
+    setTimeout(() => document.getElementById('refresh-value').classList.remove('flash'), 300);
+    document.getElementById('refresh-timestamp').textContent = new Date().toLocaleTimeString();
+    document.getElementById('refresh-counter').textContent = `Updates: ${refreshCount}`;
+  }
+  function stopAutoRefresh() {
+    clearInterval(refreshInterval); refreshInterval = null;
+    document.getElementById('start-refresh-btn').disabled = false;
+    document.getElementById('stop-refresh-btn').disabled = true;
+  }
+
+  // ── Lazy Cards ──
+  function revealLazyCards() {
+    document.querySelectorAll('.lazy-card').forEach(card => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    });
+  }
+  // IntersectionObserver for scroll
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.lazy-card').forEach(c => obs.observe(c));
+  }
+
+  // ── Flaky Element ──
+  let flakyInterval = null;
+  function startFlaky() {
+    const c = document.getElementById('flaky-container');
+    flakyInterval = setInterval(() => {
+      const visible = Math.random() > 0.4;
+      if (visible) {
+        c.innerHTML = `<div class="alert alert-warning" data-testid="flaky-element" style="margin:0;">I'm here right now! Catch me if you can.</div>`;
+      } else {
+        c.innerHTML = `<div style="color:var(--text-muted);font-size:13px;font-style:italic;">Element hidden...</div>`;
+      }
+    }, 800);
+  }
+  function stopFlaky() {
+    clearInterval(flakyInterval); flakyInterval = null;
+    document.getElementById('flaky-container').innerHTML = `<div class="text-muted text-sm">Stopped.</div>`;
+  }
+
+  // ── Count-Up ──
+  let countAnimFrame = null;
+  function countUp(target, duration) {
+    if (countAnimFrame) cancelAnimationFrame(countAnimFrame);
+    document.getElementById('counter-status').textContent = 'Counting...';
+    const start = performance.now();
+    const startVal = parseInt(document.getElementById('counter-display').textContent.replace(/,/g,'')) || 0;
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startVal + (target - startVal) * eased);
+      document.getElementById('counter-display').textContent = current.toLocaleString();
+      if (progress < 1) { countAnimFrame = requestAnimationFrame(step); }
+      else {
+        document.getElementById('counter-display').textContent = target.toLocaleString();
+        document.getElementById('counter-status').textContent = `Done! Final value: ${target.toLocaleString()}`;
+      }
+    }
+    countAnimFrame = requestAnimationFrame(step);
+  }
+  function resetCounter() {
+    if (countAnimFrame) cancelAnimationFrame(countAnimFrame);
+    document.getElementById('counter-display').textContent = '0';
+    document.getElementById('counter-status').textContent = 'Waiting...';
+  }
+</script>
+</body>
+</html>

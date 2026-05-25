@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="auth-body">
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div style="width:54px;height:54px;background:var(--primary);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:18px;color:white;font-weight:800;letter-spacing:-1px;">PW</div>
+      <h1>Playwright Practice</h1>
+      <p>Sign in to access the automation practice site</p>
+    </div>
+
+    <div class="alert alert-info" style="margin-bottom:20px;font-size:12px;">
+      <div>
+        <strong>Test Credentials:</strong><br>
+        <span class="code">admin</span> / <span class="code">admin123</span>
+        &nbsp;&nbsp;or&nbsp;&nbsp;
+        <span class="code">testuser</span> / <span class="code">password</span>
+      </div>
+    </div>
+
+    <form id="login-form" data-testid="login-form" novalidate>
+      <div class="form-group">
+        <label class="form-label required" for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-control"
+          data-testid="username-input"
+          placeholder="Enter your username"
+          autocomplete="username"
+        />
+        <div class="form-error" id="username-error" data-testid="username-error">
+          Username is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label required" for="password">Password</label>
+        <div class="input-with-icon">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            data-testid="password-input"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+          <button type="button" class="input-icon" id="toggle-password" data-testid="toggle-password-btn" title="Show/hide password">
+            &#128065;
+          </button>
+        </div>
+        <div class="form-error" id="password-error" data-testid="password-error">
+          Password is required
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <label class="form-check" style="margin:0;">
+          <input type="checkbox" id="remember-me" data-testid="remember-me-checkbox" />
+          <label for="remember-me" style="font-size:13px;cursor:pointer;">Remember me</label>
+        </label>
+        <a href="#" style="font-size:13px;color:var(--primary);text-decoration:none;" data-testid="forgot-password-link">Forgot password?</a>
+      </div>
+
+      <div
+        class="alert alert-danger hidden"
+        id="error-message"
+        data-testid="error-message"
+        role="alert"
+        style="margin-bottom:14px;"
+      >
+        Invalid username or password. Please try again.
+      </div>
+
+      <div
+        class="alert alert-success hidden"
+        id="success-message"
+        data-testid="success-message"
+        role="alert"
+        style="margin-bottom:14px;"
+      >
+        Login successful! Redirecting...
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary btn-full btn-lg"
+        data-testid="login-button"
+        id="login-button"
+      >
+        Sign In
+      </button>
+    </form>
+
+    <p class="text-center text-muted mt-16" style="font-size:12px;line-height:1.5;">
+      This site is for Playwright automation practice only.<br>
+      No real data is stored.
+    </p>
+  </div>
+
+  <script>
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+      window.location.href = 'dashboard.html';
+    }
+
+    const VALID_CREDS = [
+      { username: 'admin', password: 'admin123' },
+      { username: 'testuser', password: 'password' },
+    ];
+
+    document.getElementById('toggle-password').addEventListener('click', function () {
+      const pwd = document.getElementById('password');
+      const show = pwd.type === 'password';
+      pwd.type = show ? 'text' : 'password';
+      this.innerHTML = show ? '&#128584;' : '&#128065;';
+    });
+
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const usernameEl = document.getElementById('username');
+      const passwordEl = document.getElementById('password');
+      const username = usernameEl.value.trim();
+      const password = passwordEl.value;
+
+      // Clear previous states
+      ['username', 'password'].forEach(id => {
+        document.getElementById(id).classList.remove('is-invalid', 'is-valid');
+      });
+      document.getElementById('username-error').classList.remove('visible');
+      document.getElementById('password-error').classList.remove('visible');
+      document.getElementById('error-message').classList.add('hidden');
+
+      let valid = true;
+      if (!username) {
+        usernameEl.classList.add('is-invalid');
+        document.getElementById('username-error').classList.add('visible');
+        valid = false;
+      }
+      if (!password) {
+        passwordEl.classList.add('is-invalid');
+        document.getElementById('password-error').classList.add('visible');
+        valid = false;
+      }
+      if (!valid) return;
+
+      const btn = document.getElementById('login-button');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      setTimeout(() => {
+        const match = VALID_CREDS.find(c => c.username === username && c.password === password);
+        if (match) {
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('username', username);
+          usernameEl.classList.add('is-valid');
+          passwordEl.classList.add('is-valid');
+          document.getElementById('success-message').classList.remove('hidden');
+          btn.textContent = 'Redirecting...';
+          setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+        } else {
+          document.getElementById('error-message').classList.remove('hidden');
+          usernameEl.classList.add('is-invalid');
+          passwordEl.classList.add('is-invalid');
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+        }
+      }, 700);
+    });
+  </script>
+</body>
+</html>
