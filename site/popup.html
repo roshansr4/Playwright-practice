@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab / Window - Playwright Practice</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #4361ee, #7209b7);
+      color: white;
+      padding: 24px;
+    }
+    .box { text-align: center; max-width: 420px; }
+    .tag { display: inline-block; padding: 4px 14px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+    p { font-size: 14px; opacity: 0.85; margin-bottom: 20px; line-height: 1.6; }
+    code { background: rgba(0,0,0,0.25); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+    .info-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 16px; margin-bottom: 20px; text-align: left; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; }
+    .info-label { opacity: 0.7; }
+    .info-value { font-weight: 600; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; background: white; color: #4361ee; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .btn:hover { background: #f0f0f0; transform: translateY(-1px); }
+    input { width: 100%; padding: 8px 12px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.15); color: white; font-size: 14px; outline: none; font-family: inherit; margin-top: 10px; }
+    input::placeholder { color: rgba(255,255,255,0.5); }
+    input:focus { border-color: rgba(255,255,255,0.7); }
+    .result { margin-top: 8px; padding: 6px 10px; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 12px; font-family: monospace; display: none; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="tag">New Tab / Window</div>
+    <h1 data-testid="popup-heading">New Tab Opened!</h1>
+    <p>
+      This page was opened in a new tab or window.<br>
+      Use <code>context.waitForEvent('page')</code> in Playwright to capture and interact with this page.
+    </p>
+
+    <div class="info-box">
+      <div class="info-row">
+        <span class="info-label">Page title:</span>
+        <span class="info-value" data-testid="popup-title" id="popup-title"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Opened at:</span>
+        <span class="info-value" data-testid="popup-time" id="popup-time"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Has opener:</span>
+        <span class="info-value" data-testid="popup-has-opener" id="popup-has-opener"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Window name:</span>
+        <span class="info-value" data-testid="popup-window-name" id="popup-window-name"></span>
+      </div>
+    </div>
+
+    <input type="text" data-testid="popup-input" id="popup-input" placeholder="Type something here to test interaction..." />
+    <div class="result" data-testid="popup-input-result" id="popup-input-result"></div>
+
+    <br><br>
+
+    <button class="btn" data-testid="close-popup-btn" onclick="window.close()">
+      Close This Tab
+    </button>
+  </div>
+
+  <script>
+    document.getElementById('popup-title').textContent = document.title;
+    document.getElementById('popup-time').textContent = new Date().toLocaleTimeString();
+    document.getElementById('popup-has-opener').textContent = window.opener ? 'Yes' : 'No';
+    document.getElementById('popup-window-name').textContent = window.name || '(none)';
+
+    document.getElementById('popup-input').addEventListener('input', function () {
+      const result = document.getElementById('popup-input-result');
+      result.textContent = `Value: "${this.value}"`;
+      result.style.display = 'block';
+    });
+  </script>
+</body>
+</html>

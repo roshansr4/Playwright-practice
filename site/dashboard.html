@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-body">
+<script>if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';</script>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" data-testid="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">PW</div>
+      <div>
+        <div class="brand-name">PW Practice</div>
+        <div class="brand-sub">Automation Training</div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" data-testid="nav-dashboard"><span class="nav-dot"></span> Dashboard</a>
+    <a href="alerts.html" data-testid="nav-alerts"><span class="nav-dot"></span> Alerts &amp; Dialogs</a>
+    <a href="forms.html" data-testid="nav-forms"><span class="nav-dot"></span> Forms &amp; Inputs</a>
+    <a href="tables.html" data-testid="nav-tables"><span class="nav-dot"></span> Tables &amp; Data</a>
+    <a href="dynamic.html" data-testid="nav-dynamic"><span class="nav-dot"></span> Dynamic Content</a>
+    <a href="interactions.html" data-testid="nav-interactions"><span class="nav-dot"></span> Interactions</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" data-testid="user-avatar" id="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" data-testid="username-display" id="username-display">admin</div>
+        <div class="user-role">Tester</div>
+      </div>
+    </div>
+    <button class="btn btn-outline btn-full btn-sm" data-testid="logout-button" onclick="logout()">Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 data-testid="page-title">Dashboard</h1>
+      <p>Welcome to the Playwright Automation Practice Site</p>
+    </div>
+    <div>
+      <span class="badge badge-success" data-testid="session-status">
+        <span class="status-dot dot-green" style="margin-right:5px;"></span> Session Active
+      </span>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="alert alert-info mb-16" data-testid="welcome-banner">
+      Welcome back, <strong data-testid="welcome-username" id="welcome-username">admin</strong>!
+      This site covers all the key Playwright scenarios asked in junior automation interviews.
+      Each page has clearly labeled test scenarios with <span class="code">data-testid</span> attributes.
+    </div>
+
+    <!-- Page Cards -->
+    <h2 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--dark);">Practice Pages</h2>
+    <div class="dash-grid" data-testid="pages-grid">
+
+      <a href="alerts.html" class="dash-card" data-testid="card-alerts">
+        <div class="dash-card-icon">&#9888;</div>
+        <h3>Alerts &amp; Dialogs</h3>
+        <p>JS alerts, confirms, prompts, custom modals, toast notifications, and dialog handling.</p>
+        <div class="dash-card-meta">8 scenarios &rarr;</div>
+      </a>
+
+      <a href="forms.html" class="dash-card" data-testid="card-forms">
+        <div class="dash-card-icon">&#128203;</div>
+        <h3>Forms &amp; Inputs</h3>
+        <p>Text, email, password, checkboxes, radios, dropdowns, file upload, validation.</p>
+        <div class="dash-card-meta">12 scenarios &rarr;</div>
+      </a>
+
+      <a href="tables.html" class="dash-card" data-testid="card-tables">
+        <div class="dash-card-icon">&#128202;</div>
+        <h3>Tables &amp; Data</h3>
+        <p>Sortable columns, search/filter, pagination, row selection, CRUD operations.</p>
+        <div class="dash-card-meta">6 scenarios &rarr;</div>
+      </a>
+
+      <a href="dynamic.html" class="dash-card" data-testid="card-dynamic">
+        <div class="dash-card-icon">&#9203;</div>
+        <h3>Dynamic Content</h3>
+        <p>Delayed elements, loaders, skeletons, progress bars, auto-refresh, lazy loading.</p>
+        <div class="dash-card-meta">8 scenarios &rarr;</div>
+      </a>
+
+      <a href="interactions.html" class="dash-card" data-testid="card-interactions">
+        <div class="dash-card-icon">&#128432;</div>
+        <h3>Interactions</h3>
+        <p>Drag &amp; drop, hover menus, iframes, new tabs, keyboard, right-click, double-click.</p>
+        <div class="dash-card-meta">10 scenarios &rarr;</div>
+      </a>
+
+    </div>
+
+    <!-- Quick Reference -->
+    <div class="card" data-testid="quick-reference">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>Junior Interview Scenarios Covered</h3>
+          <p>Everything you need to know for a junior Playwright interview</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> page.goto() &amp; navigation</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Locators (role, text, testid)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> click / fill / type</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> JS Alerts (alert/confirm/prompt)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> File upload (setInputFiles)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> iFrames (frameLocator)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> New tabs (waitForEvent)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> waitForSelector / waitFor</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Drag and drop</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Hover effects</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Keyboard shortcuts</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Right-click / double-click</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Checkboxes &amp; radio buttons</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Dropdowns (select)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Form validation</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Table sorting &amp; pagination</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Assertions (toBeVisible etc)</div>
+          <div style="font-size:13px;padding:6px 0;display:flex;align-items:center;gap:6px;"><span style="color:var(--success);">&#10003;</span> Skeleton / lazy loading</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login info for tests -->
+    <div class="card" data-testid="test-info">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>Test Login Information</h3>
+          <p>Use these credentials in your Playwright tests</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:var(--light);border-radius:8px;padding:14px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Admin Account</div>
+            <div style="font-size:13px;margin-bottom:3px;"><strong>Username:</strong> <span class="code">admin</span></div>
+            <div style="font-size:13px;"><strong>Password:</strong> <span class="code">admin123</span></div>
+          </div>
+          <div style="background:var(--light);border-radius:8px;padding:14px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Test User</div>
+            <div style="font-size:13px;margin-bottom:3px;"><strong>Username:</strong> <span class="code">testuser</span></div>
+            <div style="font-size:13px;"><strong>Password:</strong> <span class="code">password</span></div>
+          </div>
+        </div>
+        <div class="info-panel mt-12" style="margin-bottom:0;">
+          <strong>Base URL:</strong> <span class="code">http://localhost:3000</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          <strong>Login page:</strong> <span class="code">/index.html</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // Set active nav
+  document.querySelector('[data-testid="nav-dashboard"]').classList.add('active');
+
+  // Set username
+  const username = sessionStorage.getItem('username') || 'admin';
+  document.getElementById('username-display').textContent = username;
+  document.getElementById('welcome-username').textContent = username;
+  document.getElementById('user-avatar').textContent = username[0].toUpperCase();
+
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

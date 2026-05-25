@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tables &amp; Data - Playwright Practice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-body">
+<script>if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';</script>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" data-testid="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">PW</div>
+      <div><div class="brand-name">PW Practice</div><div class="brand-sub">Automation Training</div></div>
+    </div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" data-testid="nav-dashboard"><span class="nav-dot"></span> Dashboard</a>
+    <a href="alerts.html" data-testid="nav-alerts"><span class="nav-dot"></span> Alerts &amp; Dialogs</a>
+    <a href="forms.html" data-testid="nav-forms"><span class="nav-dot"></span> Forms &amp; Inputs</a>
+    <a href="tables.html" data-testid="nav-tables" class="active"><span class="nav-dot"></span> Tables &amp; Data</a>
+    <a href="dynamic.html" data-testid="nav-dynamic"><span class="nav-dot"></span> Dynamic Content</a>
+    <a href="interactions.html" data-testid="nav-interactions"><span class="nav-dot"></span> Interactions</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div class="user-info"><div class="user-name" id="username-display">admin</div><div class="user-role">Tester</div></div>
+    </div>
+    <button class="btn btn-outline btn-full btn-sm" data-testid="logout-button" onclick="logout()">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Tables &amp; Data</h1>
+      <p>Practice sorting, filtering, pagination, row selection, and CRUD operations</p>
+    </div>
+    <span class="tag tag-blue">table assertions</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Main Data Table -->
+    <div class="card" data-testid="section-main-table">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>User Management Table</h3>
+          <p>Sortable, filterable, paginated table with row selection and CRUD — all key interview scenarios</p>
+        </div>
+        <button class="btn btn-primary btn-sm" data-testid="add-user-btn" onclick="openAddModal()">+ Add User</button>
+      </div>
+      <div class="card-body" style="padding-top:14px;">
+
+        <!-- Table controls -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">
+            <input
+              type="search"
+              id="table-search"
+              data-testid="table-search"
+              class="form-control"
+              placeholder="Search by name or email..."
+              oninput="applyFilter()"
+              style="max-width:280px;"
+            />
+            <select id="role-filter" data-testid="role-filter" class="form-control" style="max-width:140px;" onchange="applyFilter()">
+              <option value="">All Roles</option>
+              <option value="Admin">Admin</option>
+              <option value="Editor">Editor</option>
+              <option value="User">User</option>
+              <option value="Viewer">Viewer</option>
+            </select>
+            <select id="status-filter" data-testid="status-filter" class="form-control" style="max-width:130px;" onchange="applyFilter()">
+              <option value="">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="text-muted text-sm" data-testid="selected-count" id="selected-count">0 selected</span>
+            <button class="btn btn-danger btn-sm hidden" data-testid="delete-selected-btn" id="delete-selected-btn" onclick="deleteSelected()">Delete Selected</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper" data-testid="users-table-wrapper">
+          <table data-testid="users-table" id="users-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" id="select-all" data-testid="select-all-rows" onchange="toggleSelectAll(this)" /></th>
+                <th class="sortable" data-col="id" data-testid="th-id" onclick="sortTable('id')">#</th>
+                <th class="sortable" data-col="name" data-testid="th-name" onclick="sortTable('name')">Name</th>
+                <th class="sortable" data-col="email" data-testid="th-email" onclick="sortTable('email')">Email</th>
+                <th class="sortable" data-col="role" data-testid="th-role" onclick="sortTable('role')">Role</th>
+                <th class="sortable" data-col="status" data-testid="th-status" onclick="sortTable('status')">Status</th>
+                <th class="sortable" data-col="joined" data-testid="th-joined" onclick="sortTable('joined')">Joined</th>
+                <th style="width:100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" data-testid="table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span class="text-muted text-sm" data-testid="table-info" id="table-info">Showing 1-5 of 25</span>
+          <div class="pagination" data-testid="pagination" id="pagination"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Static Read-Only Table -->
+    <div class="card" data-testid="section-static-table">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h3>Static Data Table</h3>
+          <p>Read a specific cell by row/column — common assertion pattern</p>
+        </div>
+        <span class="tag tag-blue">cell assertions</span>
+      </div>
+      <div class="card-body">
+        <div class="table-wrapper">
+          <table data-testid="static-table">
+            <thead>
+              <tr>
+                <th data-testid="static-th-browser">Browser</th>
+                <th data-testid="static-th-engine">Engine</th>
+                <th data-testid="static-th-playwright">Playwright Support</th>
+                <th data-testid="static-th-market-share">Market Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-testid="static-row-chrome">
+                <td data-testid="cell-chrome-name">Google Chrome</td>
+                <td data-testid="cell-chrome-engine">Blink / V8</td>
+                <td data-testid="cell-chrome-support"><span class="badge badge-success">&#10003; Supported</span></td>
+                <td data-testid="cell-chrome-share">65.1%</td>
+              </tr>
+              <tr data-testid="static-row-firefox">
+                <td data-testid="cell-firefox-name">Mozilla Firefox</td>
+                <td data-testid="cell-firefox-engine">Gecko / SpiderMonkey</td>
+                <td data-testid="cell-firefox-support"><span class="badge badge-success">&#10003; Supported</span></td>
+                <td data-testid="cell-firefox-share">2.8%</td>
+              </tr>
+              <tr data-testid="static-row-safari">
+                <td data-testid="cell-safari-name">Safari</td>
+                <td data-testid="cell-safari-engine">WebKit / JavaScriptCore</td>
+                <td data-testid="cell-safari-support"><span class="badge badge-success">&#10003; Supported</span></td>
+                <td data-testid="cell-safari-share">18.5%</td>
+              </tr>
+              <tr data-testid="static-row-edge">
+                <td data-testid="cell-edge-name">Microsoft Edge</td>
+                <td data-testid="cell-edge-engine">Blink / V8</td>
+                <td data-testid="cell-edge-support"><span class="badge badge-success">&#10003; Supported</span></td>
+                <td data-testid="cell-edge-share">4.2%</td>
+              </tr>
+              <tr data-testid="static-row-opera">
+                <td data-testid="cell-opera-name">Opera</td>
+                <td data-testid="cell-opera-engine">Blink / V8</td>
+                <td data-testid="cell-opera-support"><span class="badge badge-secondary">~ Indirect</span></td>
+                <td data-testid="cell-opera-share">2.2%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="user-modal" data-testid="user-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 data-testid="modal-title" id="modal-title">Add User</h3>
+      <button class="modal-close" onclick="closeUserModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-user-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label required" for="modal-name">Full Name</label>
+          <input type="text" id="modal-name" data-testid="modal-user-name" class="form-control" placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+          <label class="form-label required" for="modal-email">Email</label>
+          <input type="email" id="modal-email" data-testid="modal-user-email" class="form-control" placeholder="john@example.com" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="modal-role">Role</label>
+          <select id="modal-role" data-testid="modal-user-role" class="form-control">
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+            <option value="Editor">Editor</option>
+            <option value="Viewer">Viewer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="modal-status">Status</label>
+          <select id="modal-status" data-testid="modal-user-status" class="form-control">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="modal-cancel" onclick="closeUserModal()">Cancel</button>
+      <button class="btn btn-primary" data-testid="modal-save" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="delete-modal" data-testid="delete-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Confirm Delete</h3>
+      <button class="modal-close" onclick="document.getElementById('delete-modal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" style="margin-bottom:0;">
+        Are you sure you want to delete <strong data-testid="delete-user-name" id="delete-user-name">this user</strong>?
+        This action cannot be undone.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-testid="delete-cancel" onclick="document.getElementById('delete-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-danger" data-testid="delete-confirm" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const username = sessionStorage.getItem('username') || 'admin';
+  document.getElementById('username-display').textContent = username;
+  document.getElementById('user-avatar').textContent = username[0].toUpperCase();
+  function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+  // ── Data ──
+  let allUsers = [
+    {id:1,name:'Alice Johnson',email:'alice@example.com',role:'Admin',status:'Active',joined:'2023-01-15'},
+    {id:2,name:'Bob Smith',email:'bob@example.com',role:'User',status:'Active',joined:'2023-02-20'},
+    {id:3,name:'Carol White',email:'carol@example.com',role:'User',status:'Inactive',joined:'2023-03-10'},
+    {id:4,name:'David Brown',email:'david@example.com',role:'Editor',status:'Active',joined:'2023-04-05'},
+    {id:5,name:'Eve Davis',email:'eve@example.com',role:'Viewer',status:'Pending',joined:'2023-05-12'},
+    {id:6,name:'Frank Miller',email:'frank@example.com',role:'User',status:'Active',joined:'2023-06-01'},
+    {id:7,name:'Grace Wilson',email:'grace@example.com',role:'Admin',status:'Active',joined:'2023-07-19'},
+    {id:8,name:'Henry Taylor',email:'henry@example.com',role:'Editor',status:'Inactive',joined:'2023-08-22'},
+    {id:9,name:'Iris Anderson',email:'iris@example.com',role:'User',status:'Active',joined:'2023-09-30'},
+    {id:10,name:'Jack Thomas',email:'jack@example.com',role:'Viewer',status:'Active',joined:'2023-10-14'},
+    {id:11,name:'Karen Jackson',email:'karen@example.com',role:'User',status:'Pending',joined:'2023-11-03'},
+    {id:12,name:'Liam Harris',email:'liam@example.com',role:'Editor',status:'Active',joined:'2023-12-08'},
+    {id:13,name:'Mia Martin',email:'mia@example.com',role:'Viewer',status:'Active',joined:'2024-01-20'},
+    {id:14,name:'Noah Garcia',email:'noah@example.com',role:'User',status:'Inactive',joined:'2024-02-14'},
+    {id:15,name:'Olivia Martinez',email:'olivia@example.com',role:'Admin',status:'Active',joined:'2024-03-05'},
+    {id:16,name:'Paul Robinson',email:'paul@example.com',role:'User',status:'Active',joined:'2024-04-18'},
+    {id:17,name:'Quinn Clark',email:'quinn@example.com',role:'Editor',status:'Pending',joined:'2024-05-22'},
+    {id:18,name:'Rachel Rodriguez',email:'rachel@example.com',role:'Viewer',status:'Active',joined:'2024-06-09'},
+    {id:19,name:'Sam Lewis',email:'sam@example.com',role:'User',status:'Active',joined:'2024-07-01'},
+    {id:20,name:'Tina Lee',email:'tina@example.com',role:'User',status:'Inactive',joined:'2024-08-15'},
+    {id:21,name:'Uma Walker',email:'uma@example.com',role:'Viewer',status:'Active',joined:'2024-09-03'},
+    {id:22,name:'Victor Hall',email:'victor@example.com',role:'Editor',status:'Active',joined:'2024-10-20'},
+    {id:23,name:'Wendy Young',email:'wendy@example.com',role:'User',status:'Pending',joined:'2024-11-11'},
+    {id:24,name:'Xavier Allen',email:'xavier@example.com',role:'Admin',status:'Active',joined:'2024-12-01'},
+    {id:25,name:'Yara King',email:'yara@example.com',role:'Viewer',status:'Inactive',joined:'2025-01-08'},
+  ];
+
+  let filteredUsers = [...allUsers];
+  let currentPage = 1;
+  const perPage = 5;
+  let sortCol = 'id';
+  let sortDir = 'asc';
+  let selectedIds = new Set();
+  let deleteTargetId = null;
+  let nextId = 26;
+
+  const statusBadge = s => ({
+    Active: '<span class="badge badge-success" data-testid="status-active">Active</span>',
+    Inactive: '<span class="badge badge-secondary" data-testid="status-inactive">Inactive</span>',
+    Pending: '<span class="badge badge-warning" data-testid="status-pending">Pending</span>',
+  })[s] || s;
+
+  function renderTable() {
+    const start = (currentPage - 1) * perPage;
+    const pageData = filteredUsers.slice(start, start + perPage);
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = pageData.map(u => `
+      <tr data-id="${u.id}" data-testid="row-${u.id}" class="${selectedIds.has(u.id) ? 'selected' : ''}">
+        <td><input type="checkbox" data-testid="select-row-${u.id}" ${selectedIds.has(u.id)?'checked':''} onchange="toggleRow(${u.id}, this)" /></td>
+        <td data-testid="cell-${u.id}-id">${u.id}</td>
+        <td data-testid="cell-${u.id}-name" style="font-weight:500;">${u.name}</td>
+        <td data-testid="cell-${u.id}-email" style="color:var(--text-muted);">${u.email}</td>
+        <td data-testid="cell-${u.id}-role"><span class="badge badge-primary">${u.role}</span></td>
+        <td data-testid="cell-${u.id}-status">${statusBadge(u.status)}</td>
+        <td data-testid="cell-${u.id}-joined">${u.joined}</td>
+        <td>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-ghost btn-sm" data-testid="edit-btn-${u.id}" onclick="openEditModal(${u.id})" title="Edit">&#9998;</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--danger);" data-testid="delete-btn-${u.id}" onclick="openDeleteModal(${u.id})" title="Delete">&#128465;</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    // Update info
+    document.getElementById('table-info').textContent =
+      filteredUsers.length === 0
+        ? 'No results found'
+        : `Showing ${start+1}-${Math.min(start+perPage, filteredUsers.length)} of ${filteredUsers.length}`;
+
+    // Pagination
+    renderPagination();
+    updateSelectedUI();
+  }
+
+  function renderPagination() {
+    const total = Math.ceil(filteredUsers.length / perPage);
+    const pg = document.getElementById('pagination');
+    if (total <= 1) { pg.innerHTML = ''; return; }
+    let html = `<button class="page-btn" data-testid="prev-page" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&#8249;</button>`;
+    for (let i = 1; i <= total; i++) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" data-testid="page-${i}" onclick="goPage(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn" data-testid="next-page" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>&#8250;</button>`;
+    pg.innerHTML = html;
+  }
+
+  function goPage(n) {
+    const max = Math.ceil(filteredUsers.length / perPage);
+    if (n < 1 || n > max) return;
+    currentPage = n;
+    renderTable();
+  }
+
+  function sortTable(col) {
+    if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+    else { sortCol = col; sortDir = 'asc'; }
+    document.querySelectorAll('th.sortable').forEach(th => { th.classList.remove('asc','desc'); });
+    const th = document.querySelector(`th[data-col="${col}"]`);
+    if (th) th.classList.add(sortDir);
+    filteredUsers.sort((a,b) => {
+      const av = a[col] || ''; const bv = b[col] || '';
+      const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv));
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    currentPage = 1;
+    renderTable();
+  }
+
+  function applyFilter() {
+    const q = document.getElementById('table-search').value.toLowerCase();
+    const role = document.getElementById('role-filter').value;
+    const status = document.getElementById('status-filter').value;
+    filteredUsers = allUsers.filter(u => {
+      const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      const matchRole = !role || u.role === role;
+      const matchStatus = !status || u.status === status;
+      return matchQ && matchRole && matchStatus;
+    });
+    currentPage = 1;
+    selectedIds.clear();
+    renderTable();
+  }
+
+  function toggleRow(id, cb) {
+    if (cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    if (row) row.classList.toggle('selected', cb.checked);
+    updateSelectedUI();
+  }
+
+  function toggleSelectAll(masterCb) {
+    const start = (currentPage - 1) * perPage;
+    const pageData = filteredUsers.slice(start, start + perPage);
+    pageData.forEach(u => {
+      if (masterCb.checked) selectedIds.add(u.id); else selectedIds.delete(u.id);
+    });
+    renderTable();
+  }
+
+  function updateSelectedUI() {
+    const count = selectedIds.size;
+    document.getElementById('selected-count').textContent = `${count} selected`;
+    document.getElementById('delete-selected-btn').classList.toggle('hidden', count === 0);
+    const pageIds = filteredUsers.slice((currentPage-1)*perPage, currentPage*perPage).map(u=>u.id);
+    const allChecked = pageIds.length > 0 && pageIds.every(id => selectedIds.has(id));
+    document.getElementById('select-all').checked = allChecked;
+    document.getElementById('select-all').indeterminate = !allChecked && pageIds.some(id => selectedIds.has(id));
+  }
+
+  function deleteSelected() {
+    if (!selectedIds.size) return;
+    if (!window.confirm(`Delete ${selectedIds.size} selected user(s)?`)) return;
+    allUsers = allUsers.filter(u => !selectedIds.has(u.id));
+    selectedIds.clear();
+    applyFilter();
+  }
+
+  function openAddModal() {
+    document.getElementById('modal-title').textContent = 'Add User';
+    document.getElementById('edit-user-id').value = '';
+    document.getElementById('modal-name').value = '';
+    document.getElementById('modal-email').value = '';
+    document.getElementById('modal-role').value = 'User';
+    document.getElementById('modal-status').value = 'Active';
+    document.getElementById('user-modal').classList.add('open');
+  }
+
+  function openEditModal(id) {
+    const user = allUsers.find(u => u.id === id);
+    if (!user) return;
+    document.getElementById('modal-title').textContent = 'Edit User';
+    document.getElementById('edit-user-id').value = id;
+    document.getElementById('modal-name').value = user.name;
+    document.getElementById('modal-email').value = user.email;
+    document.getElementById('modal-role').value = user.role;
+    document.getElementById('modal-status').value = user.status;
+    document.getElementById('user-modal').classList.add('open');
+  }
+
+  function closeUserModal() { document.getElementById('user-modal').classList.remove('open'); }
+
+  function saveUser() {
+    const id = document.getElementById('edit-user-id').value;
+    const name = document.getElementById('modal-name').value.trim();
+    const email = document.getElementById('modal-email').value.trim();
+    const role = document.getElementById('modal-role').value;
+    const status = document.getElementById('modal-status').value;
+    if (!name || !email) { alert('Name and email are required.'); return; }
+    if (id) {
+      const user = allUsers.find(u => u.id === +id);
+      if (user) Object.assign(user, {name, email, role, status});
+    } else {
+      const today = new Date().toISOString().split('T')[0];
+      allUsers.push({id: nextId++, name, email, role, status, joined: today});
+    }
+    closeUserModal();
+    applyFilter();
+  }
+
+  function openDeleteModal(id) {
+    deleteTargetId = id;
+    const user = allUsers.find(u => u.id === id);
+    document.getElementById('delete-user-name').textContent = user ? user.name : 'this user';
+    document.getElementById('delete-modal').classList.add('open');
+  }
+
+  function confirmDelete() {
+    if (deleteTargetId) {
+      allUsers = allUsers.filter(u => u.id !== deleteTargetId);
+      selectedIds.delete(deleteTargetId);
+      deleteTargetId = null;
+    }
+    document.getElementById('delete-modal').classList.remove('open');
+    applyFilter();
+  }
+
+  // Init
+  sortTable('id');
+</script>
+</body>
+</html>
